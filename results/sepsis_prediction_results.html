@@ -1,0 +1,121 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Sepsis Early Warning System Analysis Report</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                margin: 0;
+                padding: 20px;
+                color: #333;
+            }
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+            h1, h2, h3 {
+                color: #2c3e50;
+            }
+            h1 {
+                border-bottom: 2px solid #3498db;
+                padding-bottom: 10px;
+            }
+            .section {
+                margin-bottom: 30px;
+                background: #f9f9f9;
+                padding: 20px;
+                border-radius: 5px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .chart {
+                margin: 20px 0;
+                text-align: center;
+            }
+            .chart img {
+                max-width: 100%;
+                height: auto;
+                border: 1px solid #ddd;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+            }
+            th, td {
+                padding: 12px;
+                text-align: left;
+                border-bottom: 1px solid #ddd;
+            }
+            th {
+                background-color: #3498db;
+                color: white;
+            }
+            tr:hover {background-color: #f5f5f5;}
+            .footer {
+                margin-top: 30px;
+                text-align: center;
+                font-size: 0.9em;
+                color: #7f8c8d;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Sepsis Early Warning System Analysis Report</h1>
+            
+            <div class="section">
+                <h2>System Overview</h2>
+                <p>This system is based on real clinical data from the MIMIC-IV database and uses a multimodal deep learning model to predict the risk of patients developing sepsis.
+                The system integrates vital signs, laboratory tests, medication use, and clinical text records to provide real-time risk scores and explainable warning results.</p>
+            </div>
+            
+            <div class="section">
+                <h2>Model Performance</h2>
+                <div class="chart">
+                    <h3>ROC Curve</h3>
+                    <img src="figures/roc_curve.png" alt="ROC Curve" />
+                </div>
+                
+                <div class="chart">
+                    <h3>Confusion Matrix</h3>
+                    <img src="figures/confusion_matrix.png" alt="Confusion Matrix" />
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Risk Trajectory Analysis</h2>
+                <p>The chart below shows the sepsis risk scores of three typical patients over time, demonstrating the system's ability to track changes in patient status.</p>
+                <div class="chart">
+                    <img src="figures/risk_trajectories.png" alt="Risk Trajectories" />
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Feature Importance Analysis</h2>
+                <p>The following shows the most influential clinical features for model predictions, which are crucial for early identification of sepsis risk.</p>
+                <div class="chart">
+                    <img src="figures/feature_importance.png" alt="Feature Importance" />
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Clinical Application Recommendations</h2>
+                <p>Based on the results of this system, we recommend:</p>
+                <ul>
+                    <li>Increase monitoring frequency for patients with risk scores above 0.7</li>
+                    <li>Consider immediate intervention when a patient's risk score exceeds 0.9</li>
+                    <li>Pay special attention to changes in key indicators like lactate levels, white blood cell count, temperature, and blood pressure</li>
+                    <li>Combine the risk trajectories provided by the system with clinical judgment to develop personalized treatment plans</li>
+                </ul>
+            </div>
+            
+            <div class="footer">
+                <p>Sepsis Early Warning System &copy; 2025 | Developed based on MIMIC-IV database</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    
