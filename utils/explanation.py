@@ -504,7 +504,7 @@ def explain_predictions_with_shap(model, data_loader, feature_names, device, n_s
         n_samples: 用于解释的样本数
         background_samples: 用于背景分布的样本数
         save_dir: 保存解释结果的目录
-        
+    
     返回:
         shap_values_dict: 包含各样本SHAP值的字典
     """

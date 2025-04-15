@@ -205,15 +205,15 @@ def extract_vital_signs(conn, subject_ids, stay_ids, verbose=True):
             
             # 添加到原始数据
             vitals_df = pd.concat([vitals_df, gcs_total], ignore_index=True)
-        
-        # 透视表转换为宽格式
+    
+    # 透视表转换为宽格式
         vitals_wide = vitals_df.pivot_table(
             index=['subject_id', 'stay_id', 'charttime'],
-            columns='vital_sign',
-            values='valuenum',
-            aggfunc='mean'
-        ).reset_index()
-        
+        columns='vital_sign',
+        values='valuenum',
+        aggfunc='mean'
+    ).reset_index()
+    
         # 转换时间戳到datetime
         vitals_wide['charttime'] = pd.to_datetime(vitals_wide['charttime'])
         
@@ -316,7 +316,7 @@ def extract_lab_values(conn, subject_ids, hadm_ids, verbose=True):
             WHEN le.itemid = 51464 THEN 'procalcitonin' -- 降钙素原
             WHEN le.itemid = 51652 THEN 'crp' -- C反应蛋白
         END AS lab_test,
-        le.valuenum
+           le.valuenum
     FROM {hosp_schema}.labevents le
     WHERE le.itemid IN (
         51301, 50811, 51265, 50971, 50912, 50902, 50931, 50960, 50983, 50822, 
@@ -339,15 +339,15 @@ def extract_lab_values(conn, subject_ids, hadm_ids, verbose=True):
         if verbose:
             logger.info(f"提取了 {len(labs_df)} 行实验室检测数据")
             logger.info(f"涉及 {labs_df['subject_id'].nunique()} 名患者")
-        
-        # 透视表转换为宽格式
+    
+    # 透视表转换为宽格式
         labs_wide = labs_df.pivot_table(
             index=['subject_id', 'hadm_id', 'charttime'],
             columns='lab_test',
-            values='valuenum',
-            aggfunc='mean'
-        ).reset_index()
-        
+        values='valuenum',
+        aggfunc='mean'
+    ).reset_index()
+    
         # 转换时间戳到datetime
         labs_wide['charttime'] = pd.to_datetime(labs_wide['charttime'])
         

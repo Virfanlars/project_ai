@@ -111,13 +111,14 @@ def optimize_db_connection(conn):
         logger.warning(f"Failed to optimize database connection: {e}")
         # Continue execution even if optimization fails
 
-def get_all_icu_patients(conn, min_stay_hours=24):
+def get_all_icu_patients(conn, min_stay_hours=24, limit=1000):
     """
     获取所有符合条件的ICU患者
     
     参数:
         conn: 数据库连接
         min_stay_hours: 最小ICU停留时间（小时）
+        limit: 限制返回的患者数量，默认1000
         
     返回:
         DataFrame，包含患者ID和入院ID
@@ -131,17 +132,19 @@ def get_all_icu_patients(conn, min_stay_hours=24):
     FROM {icu_schema}.icustays i
     WHERE EXTRACT(EPOCH FROM (i.outtime - i.intime))/3600 >= {min_stay_hours}
     ORDER BY i.subject_id, i.hadm_id, i.stay_id
+    LIMIT {limit}
     """
     
     return pd.read_sql(query, conn)
 
-def get_sepsis_patients(conn, logger):
+def get_sepsis_patients(conn, logger, limit=1000):
     """
     从MIMIC-IV数据库中检索脓毒症患者数据。
     
     Args:
         conn: 数据库连接对象
         logger: 日志记录器对象
+        limit: 限制返回的患者数量，默认1000
     
     Returns:
         包含脓毒症患者信息的DataFrame
@@ -151,7 +154,7 @@ def get_sepsis_patients(conn, logger):
         cursor = conn.cursor()
         
         # 查询脓毒症患者数据
-        query = """
+        query = f"""
         SELECT  s.subject_id,
                 s.hadm_id,
                 s.icustay_id as stay_id,
@@ -161,6 +164,7 @@ def get_sepsis_patients(conn, logger):
         WHERE   s.sepsis3 = 1
                 AND s.sepsis3_onset_order = 1
         ORDER BY s.icustay_id
+        LIMIT {limit}
         """
         
         cursor.execute(query)
@@ -238,14 +242,14 @@ def main():
         # 优化连接
         optimize_db_connection(conn)
         
-        # 获取所有ICU患者
+        # 获取所有ICU患者，限制1000条
         print("获取符合条件的ICU患者...")
-        icu_patients = get_all_icu_patients(conn, min_stay_hours=24)
+        icu_patients = get_all_icu_patients(conn, min_stay_hours=24, limit=1000)
         print(f"找到 {len(icu_patients)} 名符合条件的ICU患者")
         
-        # 获取脓毒症患者
+        # 获取脓毒症患者，限制1000条
         print("获取脓毒症患者...")
-        sepsis_patients = get_sepsis_patients(conn, logger)
+        sepsis_patients = get_sepsis_patients(conn, logger, limit=1000)
         print(f"找到 {len(sepsis_patients)} 名脓毒症患者")
         
         # 将脓毒症发作时间合并到ICU患者表中
@@ -260,14 +264,14 @@ def main():
         # 标记脓毒症患者
         icu_patients['sepsis_label'] = icu_patients['sepsis_onset_time'].notnull().astype(int)
         
-        # 确保数据量足够大
-        min_patient_count = DATABASE_CONFIG.get('min_patient_count', 5000)
-        if len(icu_patients) < min_patient_count:
+        # 确保数据量足够大，但因为限制条件，不再尝试获取更多
+        min_patient_count = min(1000, DATABASE_CONFIG.get('min_patient_count', 5000))
+        if len(icu_patients) < min_patient_count and len(icu_patients) < 1000:
             print(f"警告：找到的患者数量 ({len(icu_patients)}) 少于目标数量 ({min_patient_count})")
             print("尝试放宽筛选条件...")
             
-            # 降低ICU停留时间要求，获取更多患者
-            icu_patients = get_all_icu_patients(conn, min_stay_hours=12)
+            # 降低ICU停留时间要求，获取更多患者，但仍然限制1000条
+            icu_patients = get_all_icu_patients(conn, min_stay_hours=12, limit=1000)
             
             # 重新合并脓毒症信息
             icu_patients = pd.merge(
@@ -291,7 +295,7 @@ def main():
         print(f"使用 {num_cores} 个CPU核心并行处理")
         
         # 将患者分块处理
-        chunk_size = min(5000, max(1000, len(icu_patients) // num_cores))
+        chunk_size = min(1000, max(100, len(icu_patients) // num_cores))
         patient_chunks = [icu_patients.iloc[i:i+chunk_size] for i in range(0, len(icu_patients), chunk_size)]
         print(f"将患者分为 {len(patient_chunks)} 个批次处理")
         
@@ -326,7 +330,7 @@ def main():
         os.makedirs('data/processed', exist_ok=True)
         
         # 保存结果
-        print("保存处理后的数据...")
+    print("保存处理后的数据...")
         patient_info.to_csv('data/processed/patient_info.csv', index=False)
         aligned_data.to_csv('data/processed/aligned_data.csv', index=False)
         

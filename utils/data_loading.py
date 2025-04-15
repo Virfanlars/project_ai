@@ -54,7 +54,7 @@ def load_structured_data(use_sample_data=False):
     return patient_features, sepsis_labels, kg_embeddings, time_axis
 
 
-def generate_sample_data(n_patients=100, n_hours=48, embedding_dim=64):
+def generate_sample_data(n_patients=1000, n_hours=48, embedding_dim=64):
     """
     生成示例数据用于开发和测试
     

@@ -2375,3 +2375,152 @@ Sepsis Early Warning System completed execution. System has the following featur
 Complete results can be viewed in the results directory, especially:
 - results/figures/: Various visualizations and performance charts
 
+2025-04-15 13:17:53,500 - __main__ - INFO - ================================================================================
+2025-04-15 13:17:53,500 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-04-15 13:17:53,501 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-04-15 13:17:53,501 - __main__ - INFO - ================================================================================
+2025-04-15 13:17:53,502 - __main__ - INFO - Execution parameters: Namespace(sample=False, epochs=100, batch_size=64, skip_db=False, skip_extraction=True, skip_training=False, only_viz=False, force_real_data=False)
+2025-04-15 13:17:53,566 - __main__ - INFO - System information: Windows 11 AMD64
+2025-04-15 13:17:53,566 - __main__ - INFO - Checking environment settings...
+2025-04-15 13:17:57,060 - __main__ - INFO - Python version: 3.12.8
+2025-04-15 13:17:57,061 - __main__ - INFO - PyTorch version: 2.6.0+cu118
+2025-04-15 13:17:58,526 - __main__ - INFO - GPU available: NVIDIA GeForce RTX 3060 Laptop GPU
+2025-04-15 13:17:58,526 - __main__ - INFO - psycopg2 detected as installed
+2025-04-15 13:17:58,526 - __main__ - INFO - Attempting to check database connection directly...
+2025-04-15 13:17:58,526 - __main__ - INFO - Attempting to connect to database: 172.16.3.67:5432/mimiciv
+2025-04-15 13:17:58,829 - __main__ - INFO - Database connection test successful
+2025-04-15 13:17:58,930 - __main__ - INFO - Number of patients in MIMIC-IV database: 364,627
+2025-04-15 13:17:58,931 - __main__ - INFO - Starting to generate MIMIC-IV derived tables...
+2025-04-15 13:17:58,936 - utils.database_config - INFO - Connecting to MIMIC-IV database: 172.16.3.67:5432/mimiciv
+2025-04-15 13:17:59,142 - utils.database_config - INFO - MIMIC-IV database connection successful!
+2025-04-15 13:17:59,500 - __main__ - INFO - Derived tables exist and contain data: mimiciv_derived.sepsis3 (7,721,514 rows)
+2025-04-15 13:17:59,501 - __main__ - INFO - Starting to train sepsis prediction model...
+2025-04-15 13:17:59,501 - __main__ - ERROR - Required training file does not exist: data/processed/patient_features.csv
+2025-04-15 13:17:59,501 - __main__ - ERROR - Model training failed, this may affect subsequent steps
+2025-04-15 13:17:59,502 - __main__ - INFO - Starting to generate visualizations and reports...
+2025-04-15 13:17:59,502 - __main__ - INFO - Executing task: Generate visualizations and reports
+2025-04-15 13:18:04,464 - __main__ - INFO - Command completed successfully: python run_visualization.py (Time: 4.96 seconds)
+2025-04-15 13:18:04,464 - __main__ - INFO - Output: 2025-04-15 13:18:01,937 - __main__ - INFO - Sepsis Early Warning System Visualization Started
+2025-04-15 13:18:01,938 - __main__ - INFO - Generating ROC curve...
+2025-04-15 13:18:02,709 - __main__ - INFO - Generating risk trajectory chart...
+2025-04-15 13:18:03,226 - __main__ - INFO - Generating confusion matrix...
+2025-04-15 13:18:03,619 - __main__ - INFO - Generating feature importance chart...
+2025-04-15 13:18:04,099 - __main__ - INFO - Generating HTML report...
+2025-04-15 13:18:04,100 - __main__ - INFO - HTML report generated: results/sepsis_prediction_results.html
+2025-04-15 13:18:04,100 - __main__ - INFO - Sepsis Early Warning System Visualization Completed
+HTML report generated: results/sepsis_prediction_results.html
+Visualization and report generation successful, please check the results directory
+2025-04-15 13:18:04,465 - __main__ - INFO - Generated visualization file: results/sepsis_prediction_results.html (4.67 KB)
+2025-04-15 13:18:04,466 - __main__ - INFO - Generated visualization file: results/figures/roc_curve.png (129.57 KB)
+2025-04-15 13:18:04,466 - __main__ - INFO - Generated visualization file: results/figures/risk_trajectories.png (318.64 KB)
+2025-04-15 13:18:04,466 - __main__ - INFO - Generated visualization file: results/figures/confusion_matrix.png (82.34 KB)
+2025-04-15 13:18:04,467 - __main__ - INFO - Generated visualization file: results/figures/feature_importance.png (137.50 KB)
+2025-04-15 13:18:04,467 - __main__ - WARNING - Expected visualization file does not exist: results/figures/model_architecture.png
+2025-04-15 13:18:04,467 - __main__ - INFO - Starting to analyze model performance and results...
+2025-04-15 13:18:04,467 - __main__ - INFO - Executing task: Analyze model results
+2025-04-15 13:18:09,712 - __main__ - INFO - Command completed successfully: python -m scripts.analysis --full (Time: 5.24 seconds)
+2025-04-15 13:18:09,712 - __main__ - INFO - Output: ��ʼ���а�������...
+�������ݺ�ģ��...
+���������ļ������ڣ�����ʾ������...
+����100�����ߵ�ʾ�����ݣ�ÿ������48Сʱ...
+������������DataFrame...
+����ŧ��֢��ǩ...
+����֪ʶͼ��Ƕ��...
+���а�������ʱ����: [Errno 2] No such file or directory: 'models/best_model.pt'
+2025-04-15 13:18:09,713 - __main__ - INFO - Process execution status:
+2025-04-15 13:18:09,713 - __main__ - INFO - - Database derived tables: Success
+2025-04-15 13:18:09,713 - __main__ - INFO - - Model training: Failure
+2025-04-15 13:18:09,713 - __main__ - INFO - - Result visualization: Success
+2025-04-15 13:18:09,714 - __main__ - INFO - - Result analysis: Success
+2025-04-15 13:18:09,714 - __main__ - INFO - Starting to validate system completeness...
+2025-04-15 13:18:09,714 - __main__ - WARNING - System validation incomplete: Some components missing
+2025-04-15 13:18:09,714 - __main__ - INFO - Sepsis Early Warning System - Execution completed, Total time: 0.27 minutes
+2025-04-15 13:18:09,715 - __main__ - INFO - Generated critical files:
+2025-04-15 13:18:09,715 - __main__ - INFO - - data/processed/patient_features.csv: 4272.63 KB
+2025-04-15 13:18:09,715 - __main__ - INFO - - data/processed/sepsis_labels.csv: 111.67 KB
+2025-04-15 13:18:09,715 - __main__ - WARNING - - models/best_model.pt: File does not exist
+2025-04-15 13:18:09,716 - __main__ - WARNING - - results/predictions.csv: File does not exist
+2025-04-15 13:18:09,716 - __main__ - INFO - - results/figures/roc_curve.png: 129.57 KB
+2025-04-15 13:18:09,716 - __main__ - INFO - - results/sepsis_prediction_results.html: 4.67 KB
+2025-04-15 13:18:09,716 - __main__ - INFO - 
+Sepsis Early Warning System completed execution. System has the following features:
+1. Large dataset: Extracted data from MIMIC-IV includes data from many real patients
+2. High-quality training: Used 100 rounds of training, with learning rate scheduling and early stopping
+3. Advanced model architecture: Used neural network structure with multimodal fusion
+4. Detailed visualizations: Provided risk trajectories, feature importance, etc.
+5. Complete HTML report: Help doctors interpret model results
+
+Complete results can be viewed in the results directory, especially:
+- results/figures/: Various visualizations and performance charts
+
+2025-04-15 13:18:38,861 - __main__ - INFO - ================================================================================
+2025-04-15 13:18:38,862 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-04-15 13:18:38,862 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-04-15 13:18:38,862 - __main__ - INFO - ================================================================================
+2025-04-15 13:18:38,863 - __main__ - INFO - Execution parameters: Namespace(sample=False, epochs=100, batch_size=64, skip_db=False, skip_extraction=False, skip_training=False, only_viz=False, force_real_data=False)
+2025-04-15 13:18:38,923 - __main__ - INFO - System information: Windows 11 AMD64
+2025-04-15 13:18:38,923 - __main__ - INFO - Checking environment settings...
+2025-04-15 13:18:41,226 - __main__ - INFO - Python version: 3.12.8
+2025-04-15 13:18:41,227 - __main__ - INFO - PyTorch version: 2.6.0+cu118
+2025-04-15 13:18:42,693 - __main__ - INFO - GPU available: NVIDIA GeForce RTX 3060 Laptop GPU
+2025-04-15 13:18:42,693 - __main__ - INFO - psycopg2 detected as installed
+2025-04-15 13:18:42,694 - __main__ - INFO - Attempting to check database connection directly...
+2025-04-15 13:18:42,694 - __main__ - INFO - Attempting to connect to database: 172.16.3.67:5432/mimiciv
+2025-04-15 13:18:42,893 - __main__ - INFO - Database connection test successful
+2025-04-15 13:18:42,962 - __main__ - INFO - Number of patients in MIMIC-IV database: 364,627
+2025-04-15 13:18:42,963 - __main__ - INFO - Starting to generate MIMIC-IV derived tables...
+2025-04-15 13:18:42,965 - utils.database_config - INFO - Connecting to MIMIC-IV database: 172.16.3.67:5432/mimiciv
+2025-04-15 13:18:43,164 - utils.database_config - INFO - MIMIC-IV database connection successful!
+2025-04-15 13:18:43,528 - __main__ - INFO - Derived tables exist and contain data: mimiciv_derived.sepsis3 (7,721,514 rows)
+2025-04-15 13:18:43,529 - __main__ - INFO - Starting to extract clinical data from MIMIC-IV...
+2025-04-15 13:18:43,529 - __main__ - INFO - Executing task: Extract clinical data
+2025-04-15 14:12:42,089 - __main__ - INFO - ================================================================================
+2025-04-15 14:12:42,090 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-04-15 14:12:42,090 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-04-15 14:12:42,090 - __main__ - INFO - ================================================================================
+2025-04-15 14:12:59,946 - __main__ - INFO - ================================================================================
+2025-04-15 14:12:59,947 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-04-15 14:12:59,947 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-04-15 14:12:59,947 - __main__ - INFO - ================================================================================
+2025-04-15 16:22:24,943 - __main__ - INFO - ================================================================================
+2025-04-15 16:22:24,943 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-04-15 16:22:24,944 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-04-15 16:22:24,944 - __main__ - INFO - ================================================================================
+2025-04-15 16:23:35,950 - __main__ - INFO - ================================================================================
+2025-04-15 16:23:35,951 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-04-15 16:23:35,951 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-04-15 16:23:35,951 - __main__ - INFO - ================================================================================
+2025-04-15 16:23:35,953 - __main__ - INFO - Force real data mode enabled
+2025-04-15 16:23:35,953 - __main__ - INFO - Execution parameters: Namespace(sample=False, epochs=100, batch_size=64, skip_db=True, skip_extraction=False, skip_training=False, only_viz=False, force_real_data=True)
+2025-04-15 16:23:36,029 - __main__ - INFO - System information: Windows 11 AMD64
+2025-04-15 16:23:36,030 - __main__ - INFO - Checking environment settings...
+2025-04-15 16:23:38,858 - __main__ - INFO - Python version: 3.12.8
+2025-04-15 16:23:38,859 - __main__ - INFO - PyTorch version: 2.6.0+cu118
+2025-04-15 16:23:40,325 - __main__ - INFO - GPU available: NVIDIA GeForce RTX 3060 Laptop GPU
+2025-04-15 16:23:40,325 - __main__ - INFO - psycopg2 detected as installed
+2025-04-15 16:23:40,326 - __main__ - INFO - Attempting to check database connection directly...
+2025-04-15 16:23:40,326 - __main__ - INFO - Attempting to connect to database: 172.16.3.67:5432/mimiciv
+2025-04-15 16:24:01,337 - __main__ - ERROR - Database connection failed: connection to server at "172.16.3.67", port 5432 failed: Connection timed out (0x0000274C/10060)
+	Is the server running on that host and accepting TCP/IP connections?
+
+2025-04-15 16:24:01,339 - __main__ - ERROR - Force real data mode enabled, but database connection failed, terminating execution
+2025-04-15 16:24:01,339 - __main__ - ERROR - Environment check failed, terminating execution
+2025-04-15 16:26:22,630 - __main__ - INFO - ================================================================================
+2025-04-15 16:26:22,630 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-04-15 16:26:22,630 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-04-15 16:26:22,630 - __main__ - INFO - ================================================================================
+2025-04-15 16:26:22,631 - __main__ - INFO - Force real data mode enabled
+2025-04-15 16:26:22,631 - __main__ - INFO - Execution parameters: Namespace(sample=False, epochs=100, batch_size=64, skip_db=True, skip_extraction=False, skip_training=False, only_viz=False, force_real_data=True)
+2025-04-15 16:26:22,697 - __main__ - INFO - System information: Windows 11 AMD64
+2025-04-15 16:26:22,697 - __main__ - INFO - Checking environment settings...
+2025-04-15 16:26:25,116 - __main__ - INFO - Python version: 3.12.8
+2025-04-15 16:26:25,117 - __main__ - INFO - PyTorch version: 2.6.0+cu118
+2025-04-15 16:26:26,587 - __main__ - INFO - GPU available: NVIDIA GeForce RTX 3060 Laptop GPU
+2025-04-15 16:26:26,588 - __main__ - INFO - psycopg2 detected as installed
+2025-04-15 16:26:26,588 - __main__ - INFO - Attempting to check database connection directly...
+2025-04-15 16:26:26,589 - __main__ - INFO - Attempting to connect to database: 172.16.3.67:5432/mimiciv
+2025-04-15 16:26:47,603 - __main__ - ERROR - Database connection failed: connection to server at "172.16.3.67", port 5432 failed: Connection timed out (0x0000274C/10060)
+	Is the server running on that host and accepting TCP/IP connections?
+
+2025-04-15 16:26:47,603 - __main__ - ERROR - Force real data mode enabled, but database connection failed, terminating execution
+2025-04-15 16:26:47,604 - __main__ - ERROR - Environment check failed, terminating execution
