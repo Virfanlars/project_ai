@@ -1,33 +1,33 @@
-# 基于多模态时序数据与知识图谱增强的脓毒症早期预警系统
+# 基于MIMIC-IV数据的脓毒症早期预警系统
 
 ## 项目概述
 
-本项目实现了一个基于多模态时序数据和知识图谱增强的脓毒症早期预警系统，旨在通过分析患者的多源异构数据，尽早识别脓毒症发生风险，并提供可解释的预警结果。
+本项目实现了一个基于MIMIC-IV数据库的脓毒症早期预警系统，通过分析患者的多源时序数据，预测脓毒症发生风险，并提供可解释的预警结果。系统利用真实的ICU数据，构建了完整的数据处理、模型训练和结果可视化流程。
 
-### 技术亮点
+### 核心功能
 
-1. **多模态数据融合**：整合MIMIC数据集中的生命体征（心率、呼吸频率等）、实验室数据（白细胞计数、乳酸值等）、用药记录（抗生素使用时间）以及护理记录中的自由文本（如"感染疑似描述"），通过Transformer模型进行时序特征提取与跨模态对齐。
+1. **多维数据整合**：处理MIMIC-IV数据库中的生命体征、实验室检查、药物使用等多维时序数据
+2. **脓毒症预测**：基于Sepsis-3标准构建脓毒症早期预警模型
+3. **风险评估**：动态计算患者发展为脓毒症的风险概率
+4. **可视化分析**：提供ROC曲线、风险轨迹等多种直观的可视化结果
 
-2. **双时序建模架构**：同时实现LSTM和TCN两种时序建模方法，LSTM更擅长捕捉长依赖关系，TCN更有效处理平行特征，双模型互补提升预测效果。
+### 技术架构
 
-3. **知识图谱嵌入**：构建医学知识图谱，将ICD诊断编码、药品相互作用等结构化知识融入模型，增强特征的可解释性。
+- **数据处理层**：PostgreSQL数据库连接、SQL查询优化、时序数据处理
+- **模型层**：多模态Transformer模型，整合生命体征、实验室检测等多源数据
+- **预测层**：动态风险评估、特征重要性分析
+- **可视化层**：交互式HTML报告、图表展示
 
-4. **动态风险预测**：利用时间注意力机制设计动态预警模型，结合SHAP值实时输出风险概率及关键影响因素。
+## 环境要求
 
-5. **时序SHAP分析**：创新性地实现了时序SHAP分析方法，可视化特征重要性随时间动态变化过程，提升临床可解释性。
+- Python 3.9+
+- PostgreSQL 12+
+- MIMIC-IV数据库
+- 至少8GB RAM
+- 至少20GB磁盘空间
+- CUDA支持（推荐，但非必需）
 
-6. **大规模数据集**：使用完整MIMIC-IV数据集，通过数据增强技术显著扩大训练样本，提高模型泛化能力。
-
-## 系统架构
-
-系统架构采用多级流水线设计，包含数据处理、特征工程、模型训练和解释几个主要模块：
-
-1. **数据处理模块**：连接MIMIC-IV数据库，提取患者生命体征、实验室检查和用药记录等多模态数据。
-2. **特征工程模块**：对时序数据进行处理，构建知识图谱，生成文本嵌入。
-3. **模型训练模块**：训练融合多模态数据的LSTM和TCN预测模型。
-4. **解释性模块**：使用SHAP分析特征重要性，生成动态风险评估结果。
-
-## 环境配置
+## 快速安装
 
 ```bash
 # 创建虚拟环境
@@ -43,174 +43,121 @@ source sepsis_env/bin/activate
 pip install -r requirements.txt
 ```
 
-## 数据准备
+## 数据库配置
 
-本项目使用MIMIC-IV数据集，需要先申请访问权限并按照以下步骤处理数据：
+系统需要访问MIMIC-IV数据库。需要设置以下环境变量以配置数据库连接：
 
-1. 下载MIMIC-IV数据集并导入本地PostgreSQL数据库
-2. 配置数据库连接信息 (在`utils/database_config.py`中修改)
-3. 运行数据抽取脚本处理原始数据
+```bash
+# Windows PowerShell
+$env:MIMIC_DB_HOST = "your_db_host"
+$env:MIMIC_DB_PORT = "your_db_port"
+$env:MIMIC_DB_NAME = "mimiciv"
+$env:MIMIC_DB_USER = "your_username"
+$env:MIMIC_DB_PASSWORD = "your_password"
+
+# 或者使用提供的脚本
+.\set_mimic_env.ps1
+```
+
+## 执行流程
+
+### 1. 测试数据库连接
+
+首先测试数据库连接是否正常：
+
+```bash
+python scripts/test_db_connection.py
+```
+
+### 2. 提取数据
+
+从MIMIC-IV数据库中提取脓毒症相关数据：
+
+```bash
+python scripts/fixed_extract_sepsis_data.py
+```
+
+### 3. 处理数据
+
+处理提取的数据，创建用于模型训练的数据集：
+
+```bash
+# 处理较小样本（1000名患者）
+python scripts/process_sepsis_data.py --sample_patients 1000
+```
+
+### 4. 转换数据格式
+
+将处理后的数据转换为模型所需的格式：
+
+```bash
+python scripts/convert_processed_data.py
+```
+
+### 5. 运行完整系统
+
+运行完整的脓毒症早期预警系统（跳过已完成的数据提取步骤）：
+
+```bash
+python run_complete_sepsis_system.py --skip_extraction
+```
+
+或者只运行可视化部分：
+
+```bash
+python run_complete_sepsis_system.py --only_viz
+```
+
+## 系统输出
+
+系统将生成以下输出结果：
+
+- `results/sepsis_prediction_results.html` - 交互式预测结果报告
+- `results/figures/roc_curve.png` - ROC曲线图
+- `results/figures/confusion_matrix.png` - 混淆矩阵
+- `results/figures/risk_trajectories.png` - 风险轨迹图
+- `results/evaluation_results.json` - 包含精确度、召回率、F1分数等指标的评估结果
 
 ## 项目结构
 
 ```
 ├── data/                 # 数据目录
-│   ├── raw/              # 原始数据
-│   ├── processed/        # 预处理后的数据
+│   ├── processed/        # 处理后的数据
 │   └── knowledge_graph/  # 知识图谱数据
 ├── models/               # 模型目录
-│   ├── fusion/           # 多模态融合模型
-│   ├── knowledge_graph/  # 知识图谱模型
-│   ├── text/             # 文本处理模型
-│   └── time_series/      # 时序预测模型(LSTM和TCN)
 ├── scripts/              # 脚本目录
-│   ├── data_extraction_main.py  # 数据抽取
-│   ├── model_training.py        # 模型训练与评估
-│   ├── analysis.py              # 模型解释与分析
-│   └── sepsis_labeling.py       # 脓毒症标签构建
+│   ├── fixed_extract_sepsis_data.py  # 数据提取
+│   ├── process_sepsis_data.py        # 数据处理
+│   ├── convert_processed_data.py     # 数据格式转换
+│   ├── test_db_connection.py         # 数据库连接测试
+│   └── model_training.py             # 模型训练
 ├── utils/                # 工具函数
 │   ├── database_config.py     # 数据库配置
+│   ├── data_loading.py        # 数据加载
 │   ├── evaluation.py          # 评估指标
-│   ├── visualization.py       # 可视化工具
-│   └── explanation.py         # SHAP分析工具
+│   └── explanation.py         # 特征解释
 ├── results/              # 结果输出目录
 ├── config.py             # 配置文件
-├── run_project.py        # 主执行脚本
-├── run_sepsis_system.py  # 完整系统执行脚本
-├── train.py              # 训练脚本
-├── predict.py            # 预测脚本
-├── requirements.txt      # 项目依赖
+├── run_complete_sepsis_system.py  # 完整系统执行脚本
 └── README.md             # 项目说明
 ```
 
-## 执行流程
+## 故障排除
 
-```bash
-# 运行完整项目流程
-python run_project.py
+1. **数据库连接问题**：
+   - 确保PostgreSQL服务正在运行
+   - 验证数据库连接参数是否正确
+   - 使用`scripts/test_db_connection.py`测试连接
 
-# 运行完整系统（包含数据处理、模型训练和可视化）
-python run_sepsis_system.py
+2. **编码问题**：
+   - 如果遇到UTF-8编码错误，请使用文本编辑器打开文件，另存为UTF-8格式（不带BOM）
+   - 对于Windows用户，可能需要处理文件中的null字节
 
-# 仅运行系统中的可视化部分
-python run_sepsis_system.py --only_viz
-
-# 使用样本数据运行系统
-python run_sepsis_system.py --sample
-
-# 仅执行训练
-python train.py
-
-# 仅执行预测
-python predict.py --patient_id <患者ID>
-```
-
-## 技术实现细节
-
-### 1. 多模态数据融合
-
-- 使用Transformer架构进行多模态时序数据融合
-- 对不同模态的数据进行特征投影，统一到相同的特征空间
-- 添加位置编码以保留时序信息
-
-### 2. 双时序模型架构
-
-- LSTM模型：使用多层双向LSTM结合注意力机制，捕捉长期依赖关系
-- TCN模型：采用扩张卷积和残差连接，有效处理变长时序数据
-- 集成策略：使用模型集成方法，结合两种模型的预测优势
-
-### 3. 知识图谱嵌入
-
-- 构建包含疾病、药物、实验室检查的医学知识图谱
-- 使用关系图卷积网络(RGCN)生成知识嵌入
-- 将知识嵌入融入患者特征表示
-
-### 4. SHAP可解释性分析
-
-- 全局特征重要性分析：识别对模型预测影响最大的特征
-- 患者个体SHAP分析：解释针对特定患者的预测依据
-- 时序SHAP分析：追踪特征重要性随时间变化的模式
+3. **内存问题**：
+   - 如果遇到内存错误，尝试减少处理的患者数量：`--sample_patients 500`
+   - 关闭其他内存密集型应用程序
 
 ## 参考资料
 
 - MIMIC-IV数据集: https://physionet.org/content/mimiciv/
-- Transformer模型: Vaswani et al., "Attention is All You Need," NIPS 2017
-- 知识图谱嵌入: Schlichtkrull et al., "Modeling Relational Data with Graph Convolutional Networks," ESWC 2018
-- LSTM: Hochreiter & Schmidhuber, "Long Short-Term Memory," Neural Computation 1997
-- TCN: Bai et al., "An Empirical Evaluation of Generic Convolutional and Recurrent Networks for Sequence Modeling," 2018
-- SHAP值: Lundberg et al., "A Unified Approach to Interpreting Model Predictions," NIPS 2017
-
-# 脓毒症早期预警系统
-
-基于MIMIC-IV数据库的多模态脓毒症早期预警系统，整合生理指标、实验室检查、药物使用和临床文本数据，实时预测患者发展为脓毒症的风险。
-
-## 系统环境要求
-
-- Python 3.9+
-- PostgreSQL 12+
-- MIMIC-IV数据库
-- 至少8GB RAM
-- NVIDIA GPU (推荐)
-
-## 安装与配置
-
-1. 克隆代码库
-2. 安装依赖包：`pip install -r requirements.txt`
-3. 配置数据库连接环境变量（使用提供的脚本）
-
-## 运行系统
-
-### 方法1：使用CMD脚本（推荐）
-
-双击 `run_mimic.cmd` 文件，然后按照屏幕提示选择运行模式：
-
-1. 仅运行可视化
-2. 运行系统（跳过数据库操作）
-3. 运行完整系统
-
-### 方法2：手动设置环境变量并运行
-
-#### 在CMD命令行中：
-
-```
-.\set_mimic_env_fixed.bat
-python run_complete_sepsis_system.py --only_viz
-```
-
-#### 在PowerShell中：
-
-首先需要允许运行未签名脚本（仅在当前会话中有效）：
-
-```
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-.\set_mimic_env.ps1
-```
-
-### 运行模式
-
-- **仅可视化模式**：`--only_viz`
-  生成模拟数据的可视化结果，不需要数据库连接
-  
-- **跳过数据库模式**：`--skip_db`
-  使用本地缓存的数据运行系统，不需要连接MIMIC数据库
-  
-- **完整模式**：`--force_real_data`
-  运行完整系统，包括数据库连接、数据提取、模型训练和可视化
-
-## 输出结果
-
-系统将生成以下输出：
-
-- `results/sepsis_prediction_results.html` - 主要报告
-- `results/figures/` - 包含ROC曲线、风险轨迹等多种可视化图表
-
-## 故障排除
-
-1. **编码问题**：如果遇到字符编码错误（如null字节错误），可以使用记事本打开相关文件，保存为UTF-8格式（不带BOM）。
-
-2. **PowerShell执行策略错误**：使用以下命令临时允许运行脚本：
-   ```
-   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-   ```
-
-3. **数据库连接错误**：检查是否正确设置了环境变量，确保数据库服务器地址和端口正确。 
+- Sepsis-3定义: Singer et al., "The Third International Consensus Definitions for Sepsis and Septic Shock (Sepsis-3)," JAMA 2016 
