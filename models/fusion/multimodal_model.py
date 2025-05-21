@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from models.knowledge_graph.kg_attention import KGAttention
 
 class SepsisTransformerModel(nn.Module):
     def __init__(self, vitals_dim, lab_dim, drug_dim, text_dim, kg_dim, 
@@ -19,7 +20,6 @@ class SepsisTransformerModel(nn.Module):
         self.lab_proj = nn.Linear(lab_dim, hidden_dim)
         self.drug_proj = nn.Linear(drug_dim, hidden_dim)
         self.text_proj = nn.Linear(text_dim, hidden_dim)
-        self.kg_proj = nn.Linear(kg_dim, hidden_dim)
         
         # 位置编码
         self.position_encoder = nn.Embedding(24*7, hidden_dim)  # 假设最长为一周的数据
@@ -42,6 +42,18 @@ class SepsisTransformerModel(nn.Module):
             nn.Linear(hidden_dim//2, 1),
             nn.Sigmoid()
         )
+        
+        # 替换简单的KG投影为注意力融合模块
+        self.use_kg_attention = True  # 配置选项
+        if self.use_kg_attention:
+            self.kg_attention = KGAttention(
+                feature_dim=hidden_dim,
+                kg_dim=kg_dim,
+                hidden_dim=hidden_dim//2
+            )
+        else:
+            # 保留原有简单投影作为备选
+            self.kg_proj = nn.Linear(kg_dim, hidden_dim)
     
     def forward(self, vitals, labs, drugs, text_embed, kg_embed, time_indices):
         # 各模态特征投影
@@ -50,18 +62,34 @@ class SepsisTransformerModel(nn.Module):
         drugs_proj = self.drug_proj(drugs)
         text_proj = self.text_proj(text_embed)
         
-        # 特殊处理知识图谱嵌入 - 确保维度匹配
-        # kg_embed形状为[batch_size, kg_dim]，需要扩展到[batch_size, seq_len, hidden_dim]
+        # 特殊处理知识图谱嵌入 - 使用注意力机制
         batch_size, seq_len, _ = vitals_proj.shape
         
-        # 先投影到hidden_dim
-        kg_proj_flat = self.kg_proj(kg_embed)  # [batch_size, hidden_dim]
-        
-        # 扩展到序列维度
-        kg_proj = kg_proj_flat.unsqueeze(1).expand(-1, seq_len, -1)  # [batch_size, seq_len, hidden_dim]
-        
-        # 特征融合
-        fused_features = vitals_proj + labs_proj + drugs_proj + text_proj + kg_proj
+        if self.use_kg_attention:
+            # 假设kg_embed是[batch_size, num_entities, kg_dim]格式
+            # 如果不是，需要先进行格式转换
+            if len(kg_embed.shape) == 2:
+                # 如果是[batch_size, kg_dim]格式，扩展为单实体
+                kg_embed = kg_embed.unsqueeze(1)  # [batch_size, 1, kg_dim]
+            
+            # 先融合其他临床特征
+            clinical_features = vitals_proj + labs_proj + drugs_proj + text_proj
+            
+            # 使用KG注意力模块融合
+            enhanced_features, kg_attn_weights = self.kg_attention(
+                clinical_features, kg_embed
+            )
+            
+            # 存储注意力权重以便解释(如需要)
+            self._kg_attention_weights = kg_attn_weights
+            
+            # 使用增强特征进行预测
+            fused_features = enhanced_features
+        else:
+            # 原有的简单融合方式
+            kg_proj_flat = self.kg_proj(kg_embed)  # [batch_size, hidden_dim]
+            kg_proj = kg_proj_flat.unsqueeze(1).expand(-1, seq_len, -1)
+            fused_features = vitals_proj + labs_proj + drugs_proj + text_proj + kg_proj
         
         # 添加位置编码
         position_encoded = self.position_encoder(time_indices)
@@ -76,4 +104,4 @@ class SepsisTransformerModel(nn.Module):
         # 输出每个时间点的预测概率
         outputs = self.output_layer(transformer_out)
         
-        return outputs 
+        return outputs

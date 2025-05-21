@@ -46,4 +46,388 @@
 5. 完整的HTML报告：帮助医生解读模型结果
 
 完整的结果可在 results 目录中查看，特别是:
-- results/figures/: 各种可视化和性能图表
+- results/figures/: 各种可视化和性能图表2025-05-20 18:25:27,125 - __main__ - INFO - ================================================================================
+2025-05-20 18:25:27,126 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-05-20 18:25:27,126 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-05-20 18:25:27,126 - __main__ - INFO - ================================================================================
+2025-05-20 18:25:27,127 - __main__ - INFO - Execution parameters: Namespace(sample=False, epochs=100, batch_size=64, skip_db=False, skip_extraction=False, skip_training=False, only_viz=True, force_real_data=False)
+2025-05-20 18:25:27,180 - __main__ - INFO - System information: Windows 11 AMD64
+2025-05-20 18:25:27,180 - __main__ - INFO - Checking environment settings...
+2025-05-20 18:25:27,181 - __main__ - ERROR - Missing required Python modules: torch, psycopg2
+2025-05-20 18:25:27,181 - __main__ - ERROR - Please install missing modules: pip install torch psycopg2
+2025-05-20 18:25:27,181 - __main__ - ERROR - Environment check failed, terminating execution
+2025-05-21 00:40:36,741 - __main__ - INFO - ================================================================================
+2025-05-21 00:40:36,742 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-05-21 00:40:36,742 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-05-21 00:40:36,743 - __main__ - INFO - ================================================================================
+2025-05-21 00:40:36,744 - __main__ - INFO - Execution parameters: Namespace(sample=False, epochs=100, batch_size=64, skip_db=False, skip_extraction=False, skip_training=False, only_viz=False, force_real_data=False)
+2025-05-21 00:40:36,802 - __main__ - INFO - System information: Windows 11 AMD64
+2025-05-21 00:40:36,803 - __main__ - INFO - Checking environment settings...
+2025-05-21 00:40:36,803 - __main__ - ERROR - Missing required Python modules: torch, psycopg2
+2025-05-21 00:40:36,804 - __main__ - ERROR - Please install missing modules: pip install torch psycopg2
+2025-05-21 00:40:36,804 - __main__ - ERROR - Environment check failed, terminating execution
+2025-05-21 00:47:29,227 - __main__ - INFO - ================================================================================
+2025-05-21 00:47:29,229 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-05-21 00:47:29,229 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-05-21 00:47:29,230 - __main__ - INFO - ================================================================================
+2025-05-21 00:47:29,231 - __main__ - INFO - Execution parameters: Namespace(sample=False, epochs=100, batch_size=64, skip_db=False, skip_extraction=False, skip_training=False, only_viz=False, force_real_data=False)
+2025-05-21 00:47:29,298 - __main__ - INFO - System information: Windows 11 AMD64
+2025-05-21 00:47:29,298 - __main__ - INFO - Checking environment settings...
+2025-05-21 00:47:29,299 - __main__ - ERROR - Missing required Python modules: torch, psycopg2
+2025-05-21 00:47:29,299 - __main__ - ERROR - Please install missing modules: pip install torch psycopg2
+2025-05-21 00:47:29,299 - __main__ - ERROR - Environment check failed, terminating execution
+2025-05-21 00:47:59,282 - __main__ - INFO - ================================================================================
+2025-05-21 00:47:59,283 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-05-21 00:47:59,283 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-05-21 00:47:59,283 - __main__ - INFO - ================================================================================
+2025-05-21 00:47:59,284 - __main__ - INFO - Execution parameters: Namespace(sample=False, epochs=100, batch_size=64, skip_db=False, skip_extraction=False, skip_training=False, only_viz=False, force_real_data=False)
+2025-05-21 00:47:59,362 - __main__ - INFO - System information: Windows 11 AMD64
+2025-05-21 00:47:59,363 - __main__ - INFO - Checking environment settings...
+2025-05-21 00:47:59,364 - __main__ - ERROR - Missing required Python modules: torch, psycopg2
+2025-05-21 00:47:59,364 - __main__ - ERROR - Please install missing modules: pip install torch psycopg2
+2025-05-21 00:47:59,364 - __main__ - ERROR - Environment check failed, terminating execution
+2025-05-21 00:48:26,848 - __main__ - INFO - ================================================================================
+2025-05-21 00:48:26,848 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-05-21 00:48:26,848 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-05-21 00:48:26,848 - __main__ - INFO - ================================================================================
+2025-05-21 00:48:26,850 - __main__ - INFO - Execution parameters: Namespace(sample=False, epochs=100, batch_size=64, skip_db=False, skip_extraction=False, skip_training=False, only_viz=False, force_real_data=False)
+2025-05-21 00:48:26,904 - __main__ - INFO - System information: Windows 11 AMD64
+2025-05-21 00:48:26,904 - __main__ - INFO - Checking environment settings...
+2025-05-21 00:48:26,905 - __main__ - ERROR - Missing required Python modules: torch, psycopg2
+2025-05-21 00:48:26,905 - __main__ - ERROR - Please install missing modules: pip install torch psycopg2
+2025-05-21 00:48:26,905 - __main__ - ERROR - Environment check failed, terminating execution
+2025-05-21 00:49:25,241 - __main__ - INFO - ================================================================================
+2025-05-21 00:49:25,241 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-05-21 00:49:25,242 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-05-21 00:49:25,242 - __main__ - INFO - ================================================================================
+2025-05-21 00:49:25,244 - __main__ - INFO - Execution parameters: Namespace(sample=False, epochs=100, batch_size=64, skip_db=False, skip_extraction=False, skip_training=False, only_viz=False, force_real_data=False)
+2025-05-21 00:49:25,307 - __main__ - INFO - System information: Windows 11 AMD64
+2025-05-21 00:49:25,307 - __main__ - INFO - Checking environment settings...
+2025-05-21 00:49:25,308 - __main__ - ERROR - Missing required Python modules: torch, psycopg2
+2025-05-21 00:49:25,308 - __main__ - ERROR - Please install missing modules: pip install torch psycopg2
+2025-05-21 00:49:25,308 - __main__ - ERROR - Environment check failed, terminating execution
+2025-05-21 00:49:48,358 - __main__ - INFO - ================================================================================
+2025-05-21 00:49:48,359 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-05-21 00:49:48,359 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-05-21 00:49:48,359 - __main__ - INFO - ================================================================================
+2025-05-21 00:49:48,361 - __main__ - INFO - Execution parameters: Namespace(sample=False, epochs=100, batch_size=64, skip_db=False, skip_extraction=False, skip_training=False, only_viz=False, force_real_data=False)
+2025-05-21 00:49:48,410 - __main__ - INFO - System information: Windows 11 AMD64
+2025-05-21 00:49:48,410 - __main__ - INFO - Checking environment settings...
+2025-05-21 00:49:48,411 - __main__ - ERROR - Missing required Python modules: torch, psycopg2
+2025-05-21 00:49:48,411 - __main__ - ERROR - Please install missing modules: pip install torch psycopg2
+2025-05-21 00:49:48,411 - __main__ - ERROR - Environment check failed, terminating execution
+2025-05-21 00:52:29,100 - __main__ - INFO - ================================================================================
+2025-05-21 00:52:29,101 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-05-21 00:52:29,101 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-05-21 00:52:29,101 - __main__ - INFO - ================================================================================
+2025-05-21 00:52:29,102 - __main__ - INFO - Execution parameters: Namespace(sample=False, epochs=100, batch_size=64, skip_db=False, skip_extraction=False, skip_training=False, only_viz=False, force_real_data=False)
+2025-05-21 00:52:29,164 - __main__ - INFO - System information: Windows 11 AMD64
+2025-05-21 00:52:29,164 - __main__ - INFO - Checking environment settings...
+2025-05-21 00:52:29,165 - __main__ - ERROR - Missing required Python modules: torch, psycopg2
+2025-05-21 00:52:29,165 - __main__ - ERROR - Please install missing modules: pip install torch psycopg2
+2025-05-21 00:52:29,166 - __main__ - ERROR - Environment check failed, terminating execution
+2025-05-21 00:53:08,443 - __main__ - INFO - ================================================================================
+2025-05-21 00:53:08,443 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-05-21 00:53:08,444 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-05-21 00:53:08,444 - __main__ - INFO - ================================================================================
+2025-05-21 00:53:08,445 - __main__ - INFO - Execution parameters: Namespace(sample=False, epochs=100, batch_size=64, skip_db=False, skip_extraction=False, skip_training=False, only_viz=False, force_real_data=False)
+2025-05-21 00:53:08,502 - __main__ - INFO - System information: Windows 11 AMD64
+2025-05-21 00:53:08,503 - __main__ - INFO - Checking environment settings...
+2025-05-21 00:53:10,626 - __main__ - INFO - Python version: 3.12.2
+2025-05-21 00:53:10,627 - __main__ - INFO - PyTorch version: 2.7.0+cpu
+2025-05-21 00:53:10,627 - __main__ - WARNING - GPU not available, using CPU may result in slow training
+2025-05-21 00:53:10,627 - __main__ - INFO - psycopg2 detected as installed
+2025-05-21 00:53:10,627 - __main__ - INFO - Attempting to check database connection directly...
+2025-05-21 00:53:10,627 - __main__ - INFO - Attempting to connect to database: 172.16.3.67:5432/mimiciv
+2025-05-21 00:53:31,641 - __main__ - ERROR - Database connection failed: connection to server at "172.16.3.67", port 5432 failed: Connection timed out (0x0000274C/10060)
+	Is the server running on that host and accepting TCP/IP connections?
+
+2025-05-21 00:53:31,641 - __main__ - WARNING - Database connection failed, but will continue execution
+2025-05-21 00:53:31,641 - __main__ - INFO - Starting to generate MIMIC-IV derived tables...
+2025-05-21 00:53:31,645 - utils.database_config - INFO - Connecting to MIMIC-IV database: 172.16.3.67:5432/mimiciv
+2025-05-21 00:53:52,658 - utils.database_config - ERROR - MIMIC-IV database connection failed: connection to server at "172.16.3.67", port 5432 failed: Connection timed out (0x0000274C/10060)
+	Is the server running on that host and accepting TCP/IP connections?
+
+2025-05-21 00:53:52,658 - utils.database_config - ERROR - Real data is required but cannot connect to MIMIC-IV database. Terminating program.
+2025-05-21 00:54:05,456 - __main__ - INFO - ================================================================================
+2025-05-21 00:54:05,456 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-05-21 00:54:05,456 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-05-21 00:54:05,456 - __main__ - INFO - ================================================================================
+2025-05-21 00:54:18,177 - __main__ - INFO - ================================================================================
+2025-05-21 00:54:18,177 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-05-21 00:54:18,177 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-05-21 00:54:18,178 - __main__ - INFO - ================================================================================
+2025-05-21 00:54:18,179 - __main__ - INFO - Force real data mode enabled
+2025-05-21 00:54:18,179 - __main__ - INFO - Execution parameters: Namespace(sample=False, epochs=100, batch_size=64, skip_db=False, skip_extraction=False, skip_training=False, only_viz=False, force_real_data=True)
+2025-05-21 00:54:18,232 - __main__ - INFO - System information: Windows 11 AMD64
+2025-05-21 00:54:18,232 - __main__ - INFO - Checking environment settings...
+2025-05-21 00:54:19,545 - __main__ - INFO - Python version: 3.12.2
+2025-05-21 00:54:19,545 - __main__ - INFO - PyTorch version: 2.7.0+cpu
+2025-05-21 00:54:19,545 - __main__ - WARNING - GPU not available, using CPU may result in slow training
+2025-05-21 00:54:19,546 - __main__ - INFO - psycopg2 detected as installed
+2025-05-21 00:54:19,546 - __main__ - INFO - Attempting to check database connection directly...
+2025-05-21 00:54:19,546 - __main__ - INFO - Attempting to connect to database: 172.16.3.67:5432/mimiciv
+2025-05-21 00:54:40,559 - __main__ - ERROR - Database connection failed: connection to server at "172.16.3.67", port 5432 failed: Connection timed out (0x0000274C/10060)
+	Is the server running on that host and accepting TCP/IP connections?
+
+2025-05-21 00:54:40,560 - __main__ - ERROR - Force real data mode enabled, but database connection failed, terminating execution
+2025-05-21 00:54:40,560 - __main__ - ERROR - Environment check failed, terminating execution
+2025-05-21 00:56:49,103 - __main__ - INFO - ================================================================================
+2025-05-21 00:56:49,103 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-05-21 00:56:49,103 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-05-21 00:56:49,103 - __main__ - INFO - ================================================================================
+2025-05-21 00:56:49,104 - __main__ - INFO - Execution parameters: Namespace(sample=False, epochs=100, batch_size=64, skip_db=False, skip_extraction=False, skip_training=False, only_viz=False, force_real_data=False)
+2025-05-21 00:56:49,162 - __main__ - INFO - System information: Windows 11 AMD64
+2025-05-21 00:56:49,162 - __main__ - INFO - Checking environment settings...
+2025-05-21 00:56:50,376 - __main__ - INFO - Python version: 3.12.2
+2025-05-21 00:56:50,377 - __main__ - INFO - PyTorch version: 2.7.0+cpu
+2025-05-21 00:56:50,377 - __main__ - WARNING - GPU not available, using CPU may result in slow training
+2025-05-21 00:56:50,377 - __main__ - INFO - psycopg2 detected as installed
+2025-05-21 00:56:50,378 - __main__ - INFO - Attempting to check database connection directly...
+2025-05-21 00:56:50,378 - __main__ - INFO - Attempting to connect to database: 172.16.3.67:5432/mimiciv
+2025-05-21 00:57:11,391 - __main__ - ERROR - Database connection failed: connection to server at "172.16.3.67", port 5432 failed: Connection timed out (0x0000274C/10060)
+	Is the server running on that host and accepting TCP/IP connections?
+
+2025-05-21 00:57:11,391 - __main__ - WARNING - Database connection failed, but will continue execution
+2025-05-21 00:57:11,391 - __main__ - INFO - Starting to generate MIMIC-IV derived tables...
+2025-05-21 00:57:11,393 - utils.database_config - INFO - Connecting to MIMIC-IV database: 172.16.3.67:5432/mimiciv
+2025-05-21 00:57:32,396 - utils.database_config - ERROR - MIMIC-IV database connection failed: connection to server at "172.16.3.67", port 5432 failed: Connection timed out (0x0000274C/10060)
+	Is the server running on that host and accepting TCP/IP connections?
+
+2025-05-21 00:57:32,396 - utils.database_config - ERROR - Real data is required but cannot connect to MIMIC-IV database. Terminating program.
+2025-05-21 00:57:55,111 - __main__ - INFO - ================================================================================
+2025-05-21 00:57:55,112 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-05-21 00:57:55,112 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-05-21 00:57:55,112 - __main__ - INFO - ================================================================================
+2025-05-21 00:57:55,114 - __main__ - INFO - Execution parameters: Namespace(sample=False, epochs=100, batch_size=64, skip_db=False, skip_extraction=False, skip_training=False, only_viz=False, force_real_data=False)
+2025-05-21 00:57:55,186 - __main__ - INFO - System information: Windows 11 AMD64
+2025-05-21 00:57:55,186 - __main__ - INFO - Checking environment settings...
+2025-05-21 00:57:56,371 - __main__ - INFO - Python version: 3.12.2
+2025-05-21 00:57:56,372 - __main__ - INFO - PyTorch version: 2.7.0+cpu
+2025-05-21 00:57:56,372 - __main__ - WARNING - GPU not available, using CPU may result in slow training
+2025-05-21 00:57:56,372 - __main__ - INFO - psycopg2 detected as installed
+2025-05-21 00:57:56,372 - __main__ - INFO - Attempting to check database connection directly...
+2025-05-21 00:57:56,372 - __main__ - INFO - Attempting to connect to database: 172.16.3.67:5432/mimiciv
+2025-05-21 00:58:17,386 - __main__ - INFO - User interrupted execution
+2025-05-21 01:00:10,541 - __main__ - INFO - ================================================================================
+2025-05-21 01:00:10,541 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-05-21 01:00:10,542 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-05-21 01:00:10,542 - __main__ - INFO - ================================================================================
+2025-05-21 01:00:10,543 - __main__ - INFO - Execution parameters: Namespace(sample=False, epochs=100, batch_size=64, skip_db=False, skip_extraction=False, skip_training=False, only_viz=False, force_real_data=False)
+2025-05-21 01:00:10,614 - __main__ - INFO - System information: Windows 11 AMD64
+2025-05-21 01:00:10,614 - __main__ - INFO - Checking environment settings...
+2025-05-21 01:00:11,823 - __main__ - INFO - Python version: 3.12.2
+2025-05-21 01:00:11,823 - __main__ - INFO - PyTorch version: 2.7.0+cpu
+2025-05-21 01:00:11,823 - __main__ - WARNING - GPU not available, using CPU may result in slow training
+2025-05-21 01:00:11,824 - __main__ - INFO - psycopg2 detected as installed
+2025-05-21 01:00:11,827 - __main__ - INFO - Attempting to check database connection directly...
+2025-05-21 01:00:11,827 - __main__ - INFO - Attempting to connect to database: 172.16.3.67:5432/mimiciv
+2025-05-21 01:00:32,840 - __main__ - INFO - User interrupted execution
+2025-05-21 01:01:01,927 - __main__ - INFO - ================================================================================
+2025-05-21 01:01:01,928 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-05-21 01:01:01,928 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-05-21 01:01:01,929 - __main__ - INFO - ================================================================================
+2025-05-21 01:01:01,930 - __main__ - INFO - Execution parameters: Namespace(sample=False, epochs=100, batch_size=64, skip_db=False, skip_extraction=False, skip_training=False, only_viz=False, force_real_data=False)
+2025-05-21 01:01:01,992 - __main__ - INFO - System information: Windows 11 AMD64
+2025-05-21 01:01:01,993 - __main__ - INFO - Checking environment settings...
+2025-05-21 01:01:03,186 - __main__ - INFO - Python version: 3.12.2
+2025-05-21 01:01:03,186 - __main__ - INFO - PyTorch version: 2.7.0+cpu
+2025-05-21 01:01:03,186 - __main__ - WARNING - GPU not available, using CPU may result in slow training
+2025-05-21 01:01:03,187 - __main__ - INFO - psycopg2 detected as installed
+2025-05-21 01:01:03,187 - __main__ - INFO - Attempting to check database connection directly...
+2025-05-21 01:01:03,187 - __main__ - INFO - Attempting to connect to database: 172.16.3.67:5432/mimiciv
+2025-05-21 01:01:24,202 - __main__ - INFO - User interrupted execution
+2025-05-21 01:01:39,683 - __main__ - INFO - ================================================================================
+2025-05-21 01:01:39,683 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-05-21 01:01:39,683 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-05-21 01:01:39,684 - __main__ - INFO - ================================================================================
+2025-05-21 01:01:39,685 - __main__ - INFO - Execution parameters: Namespace(sample=False, epochs=100, batch_size=64, skip_db=False, skip_extraction=False, skip_training=False, only_viz=False, force_real_data=False)
+2025-05-21 01:01:39,738 - __main__ - INFO - System information: Windows 11 AMD64
+2025-05-21 01:01:39,739 - __main__ - INFO - Checking environment settings...
+2025-05-21 01:01:40,939 - __main__ - INFO - Python version: 3.12.2
+2025-05-21 01:01:40,940 - __main__ - INFO - PyTorch version: 2.7.0+cpu
+2025-05-21 01:01:40,940 - __main__ - WARNING - GPU not available, using CPU may result in slow training
+2025-05-21 01:01:40,940 - __main__ - INFO - psycopg2 detected as installed
+2025-05-21 01:01:40,940 - __main__ - INFO - Attempting to check database connection directly...
+2025-05-21 01:01:40,941 - __main__ - INFO - Attempting to connect to database: 172.16.3.67:5432/mimiciv
+2025-05-21 01:02:01,955 - __main__ - INFO - User interrupted execution
+2025-05-21 01:02:09,523 - __main__ - INFO - ================================================================================
+2025-05-21 01:02:09,523 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-05-21 01:02:09,523 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-05-21 01:02:09,524 - __main__ - INFO - ================================================================================
+2025-05-21 01:02:09,525 - __main__ - INFO - Execution parameters: Namespace(sample=False, epochs=100, batch_size=64, skip_db=False, skip_extraction=False, skip_training=False, only_viz=False, force_real_data=False)
+2025-05-21 01:02:09,582 - __main__ - INFO - System information: Windows 11 AMD64
+2025-05-21 01:02:09,582 - __main__ - INFO - Checking environment settings...
+2025-05-21 01:02:10,839 - __main__ - INFO - Python version: 3.12.2
+2025-05-21 01:02:10,839 - __main__ - INFO - PyTorch version: 2.7.0+cpu
+2025-05-21 01:02:10,840 - __main__ - WARNING - GPU not available, using CPU may result in slow training
+2025-05-21 01:02:10,840 - __main__ - INFO - psycopg2 detected as installed
+2025-05-21 01:02:10,840 - __main__ - INFO - Attempting to check database connection directly...
+2025-05-21 01:02:10,840 - __main__ - INFO - Attempting to connect to database: localhost:5432/mimiciv
+2025-05-21 01:02:11,037 - __main__ - ERROR - Database connection failed: 'utf-8' codec can't decode byte 0xd6 in position 61: invalid continuation byte
+2025-05-21 01:02:11,038 - __main__ - WARNING - Database connection failed, but will continue execution
+2025-05-21 01:02:11,038 - __main__ - INFO - Starting to generate MIMIC-IV derived tables...
+2025-05-21 01:02:11,041 - utils.database_config - INFO - Connecting to MIMIC-IV database: localhost:5432/mimiciv
+2025-05-21 01:02:11,215 - utils.database_config - INFO - MIMIC-IV database connection successful!
+2025-05-21 01:02:13,081 - __main__ - INFO - Derived tables exist and contain data: mimiciv_derived.sepsis3 (7,721,514 rows)
+2025-05-21 01:02:13,084 - __main__ - INFO - Starting to extract clinical data from MIMIC-IV...
+2025-05-21 01:02:13,084 - __main__ - INFO - Executing task: Extract clinical data
+2025-05-21 01:02:13,323 - __main__ - ERROR - Command execution failed: python -m scripts.data_extraction_main 
+2025-05-21 01:02:13,323 - __main__ - ERROR - Error: Traceback (most recent call last):
+  File "<frozen runpy>", line 189, in _run_module_as_main
+  File "<frozen runpy>", line 159, in _get_module_details
+  File "<frozen importlib._bootstrap_external>", line 1129, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1059, in source_to_code
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "E:\�˹����ܵ���\final\project_ai\scripts\data_extraction_main.py", line 333
+    print("���洦���������...")
+    ^^^^^
+SyntaxError: expected 'except' or 'finally' block
+2025-05-21 01:02:13,323 - __main__ - ERROR - Data extraction failed
+2025-05-21 01:02:13,323 - __main__ - ERROR - Data extraction failed, this may affect subsequent steps
+2025-05-21 01:02:13,323 - __main__ - INFO - Starting to train sepsis prediction model...
+2025-05-21 01:02:13,323 - __main__ - INFO - Executing task: Train multimodal prediction model
+2025-05-21 01:02:13,486 - __main__ - INFO - Command completed successfully: python -m scripts.model_training --epochs 100 --batch_size 64 --learning_rate 0.0001 --early_stopping 10 --save_model True --use_multimodal True --use_weighted_loss True (Time: 0.16 seconds)
+2025-05-21 01:02:13,486 - __main__ - ERROR - Model file does not exist: models/best_model.pt
+2025-05-21 01:02:13,486 - __main__ - ERROR - Model training failed, this may affect subsequent steps
+2025-05-21 01:02:13,486 - __main__ - INFO - Starting to generate visualizations and reports...
+2025-05-21 01:02:13,486 - __main__ - INFO - Executing task: Generate visualizations and reports
+2025-05-21 01:02:18,629 - __main__ - INFO - Command completed successfully: python run_visualization.py (Time: 5.14 seconds)
+2025-05-21 01:02:18,630 - __main__ - INFO - Output: 2025-05-21 01:02:16,769 - __main__ - INFO - Sepsis Early Warning System Visualization Started
+2025-05-21 01:02:16,770 - __main__ - INFO - Generating ROC curve...
+2025-05-21 01:02:17,376 - __main__ - INFO - Generating risk trajectory chart...
+2025-05-21 01:02:17,688 - __main__ - INFO - Generating confusion matrix...
+2025-05-21 01:02:17,906 - __main__ - INFO - Generating feature importance chart...
+2025-05-21 01:02:18,229 - __main__ - INFO - Generating HTML report...
+2025-05-21 01:02:18,230 - __main__ - INFO - HTML report generated: results/sepsis_prediction_results.html
+2025-05-21 01:02:18,230 - __main__ - INFO - Sepsis Early Warning System Visualization Completed
+HTML report generated: results/sepsis_prediction_results.html
+Visualization and report generation successful, please check the results directory
+2025-05-21 01:02:18,630 - __main__ - INFO - Generated visualization file: results/sepsis_prediction_results.html (4.67 KB)
+2025-05-21 01:02:18,631 - __main__ - INFO - Generated visualization file: results/figures/roc_curve.png (129.60 KB)
+2025-05-21 01:02:18,631 - __main__ - INFO - Generated visualization file: results/figures/risk_trajectories.png (318.96 KB)
+2025-05-21 01:02:18,631 - __main__ - INFO - Generated visualization file: results/figures/confusion_matrix.png (82.58 KB)
+2025-05-21 01:02:18,631 - __main__ - INFO - Generated visualization file: results/figures/feature_importance.png (138.04 KB)
+2025-05-21 01:02:18,632 - __main__ - WARNING - Expected visualization file does not exist: results/figures/model_architecture.png
+2025-05-21 01:02:18,632 - __main__ - INFO - Starting to analyze model performance and results...
+2025-05-21 01:02:18,632 - __main__ - INFO - Executing task: Analyze model results
+2025-05-21 01:02:19,432 - __main__ - INFO - Command completed successfully: python -m scripts.analysis --full (Time: 0.80 seconds)
+2025-05-21 01:02:19,432 - __main__ - INFO - Output: ��ʼ���а�������...
+���а�������ʱ����: No module named 'torch'
+2025-05-21 01:02:19,432 - __main__ - INFO - Process execution status:
+2025-05-21 01:02:19,432 - __main__ - INFO - - Database derived tables: Success
+2025-05-21 01:02:19,433 - __main__ - INFO - - Data extraction: Failure
+2025-05-21 01:02:19,433 - __main__ - INFO - - Model training: Failure
+2025-05-21 01:02:19,433 - __main__ - INFO - - Result visualization: Success
+2025-05-21 01:02:19,433 - __main__ - INFO - - Result analysis: Success
+2025-05-21 01:02:19,433 - __main__ - INFO - Starting to validate system completeness...
+2025-05-21 01:02:19,434 - __main__ - WARNING - System validation incomplete: Some components missing
+2025-05-21 01:02:19,434 - __main__ - INFO - Sepsis Early Warning System - Execution completed, Total time: 0.17 minutes
+2025-05-21 01:02:19,434 - __main__ - INFO - Generated critical files:
+2025-05-21 01:02:19,434 - __main__ - INFO - - data/processed/patient_features.csv: 4272.63 KB
+2025-05-21 01:02:19,434 - __main__ - INFO - - data/processed/sepsis_labels.csv: 111.67 KB
+2025-05-21 01:02:19,435 - __main__ - WARNING - - models/best_model.pt: File does not exist
+2025-05-21 01:02:19,435 - __main__ - WARNING - - results/predictions.csv: File does not exist
+2025-05-21 01:02:19,435 - __main__ - INFO - - results/figures/roc_curve.png: 129.60 KB
+2025-05-21 01:02:19,435 - __main__ - INFO - - results/sepsis_prediction_results.html: 4.67 KB
+2025-05-21 01:02:19,435 - __main__ - INFO - 
+Sepsis Early Warning System completed execution. System has the following features:
+1. Large dataset: Extracted data from MIMIC-IV includes data from many real patients
+2. High-quality training: Used 100 rounds of training, with learning rate scheduling and early stopping
+3. Advanced model architecture: Used neural network structure with multimodal fusion
+4. Detailed visualizations: Provided risk trajectories, feature importance, etc.
+5. Complete HTML report: Help doctors interpret model results
+
+Complete results can be viewed in the results directory, especially:
+- results/figures/: Various visualizations and performance charts
+
+2025-05-21 01:04:25,540 - __main__ - INFO - ================================================================================
+2025-05-21 01:04:25,541 - __main__ - INFO - Sepsis Early Warning System - Starting execution
+2025-05-21 01:04:25,541 - __main__ - INFO - Based on real data analysis from MIMIC-IV large clinical database
+2025-05-21 01:04:25,541 - __main__ - INFO - ================================================================================
+2025-05-21 01:04:25,542 - __main__ - INFO - Execution parameters: Namespace(sample=False, epochs=100, batch_size=64, skip_db=False, skip_extraction=False, skip_training=False, only_viz=False, force_real_data=False)
+2025-05-21 01:04:25,604 - __main__ - INFO - System information: Windows 11 AMD64
+2025-05-21 01:04:25,604 - __main__ - INFO - Checking environment settings...
+2025-05-21 01:04:26,851 - __main__ - INFO - Python version: 3.12.2
+2025-05-21 01:04:26,852 - __main__ - INFO - PyTorch version: 2.7.0+cpu
+2025-05-21 01:04:26,852 - __main__ - WARNING - GPU not available, using CPU may result in slow training
+2025-05-21 01:04:26,852 - __main__ - INFO - psycopg2 detected as installed
+2025-05-21 01:04:26,852 - __main__ - INFO - Attempting to check database connection directly...
+2025-05-21 01:04:26,853 - __main__ - INFO - Attempting to connect to database: localhost:5432/mimiciv
+2025-05-21 01:04:27,022 - __main__ - ERROR - Database connection failed: 'utf-8' codec can't decode byte 0xd6 in position 61: invalid continuation byte
+2025-05-21 01:04:27,023 - __main__ - WARNING - Database connection failed, but will continue execution
+2025-05-21 01:04:27,023 - __main__ - INFO - Starting to generate MIMIC-IV derived tables...
+2025-05-21 01:04:27,024 - utils.database_config - INFO - Connecting to MIMIC-IV database: localhost:5432/mimiciv
+2025-05-21 01:04:27,188 - utils.database_config - INFO - MIMIC-IV database connection successful!
+2025-05-21 01:04:27,750 - __main__ - INFO - Derived tables exist and contain data: mimiciv_derived.sepsis3 (7,721,514 rows)
+2025-05-21 01:04:27,750 - __main__ - INFO - Starting to extract clinical data from MIMIC-IV...
+2025-05-21 01:04:27,750 - __main__ - INFO - Executing task: Extract clinical data
+2025-05-21 01:04:27,916 - __main__ - ERROR - Command execution failed: python -m scripts.data_extraction_main 
+2025-05-21 01:04:27,917 - __main__ - ERROR - Error: Traceback (most recent call last):
+  File "<frozen runpy>", line 189, in _run_module_as_main
+  File "<frozen runpy>", line 159, in _get_module_details
+  File "<frozen importlib._bootstrap_external>", line 1129, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1059, in source_to_code
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "E:\�˹����ܵ���\final\project_ai\scripts\data_extraction_main.py", line 333
+    print("���洦���������...")
+    ^^^^^
+SyntaxError: expected 'except' or 'finally' block
+2025-05-21 01:04:27,917 - __main__ - ERROR - Data extraction failed
+2025-05-21 01:04:27,917 - __main__ - ERROR - Data extraction failed, this may affect subsequent steps
+2025-05-21 01:04:27,917 - __main__ - INFO - Starting to train sepsis prediction model...
+2025-05-21 01:04:27,918 - __main__ - INFO - Executing task: Train multimodal prediction model
+2025-05-21 01:04:28,063 - __main__ - INFO - Command completed successfully: python -m scripts.model_training --epochs 100 --batch_size 64 --learning_rate 0.0001 --early_stopping 10 --save_model True --use_multimodal True --use_weighted_loss True (Time: 0.15 seconds)
+2025-05-21 01:04:28,064 - __main__ - ERROR - Model file does not exist: models/best_model.pt
+2025-05-21 01:04:28,064 - __main__ - ERROR - Model training failed, this may affect subsequent steps
+2025-05-21 01:04:28,064 - __main__ - INFO - Starting to generate visualizations and reports...
+2025-05-21 01:04:28,064 - __main__ - INFO - Executing task: Generate visualizations and reports
+2025-05-21 01:04:31,393 - __main__ - INFO - Command completed successfully: python run_visualization.py (Time: 3.33 seconds)
+2025-05-21 01:04:31,394 - __main__ - INFO - Output: 2025-05-21 01:04:29,925 - __main__ - INFO - Sepsis Early Warning System Visualization Started
+2025-05-21 01:04:29,925 - __main__ - INFO - Generating ROC curve...
+2025-05-21 01:04:30,230 - __main__ - INFO - Generating risk trajectory chart...
+2025-05-21 01:04:30,538 - __main__ - INFO - Generating confusion matrix...
+2025-05-21 01:04:30,749 - __main__ - INFO - Generating feature importance chart...
+2025-05-21 01:04:31,044 - __main__ - INFO - Generating HTML report...
+2025-05-21 01:04:31,044 - __main__ - INFO - HTML report generated: results/sepsis_prediction_results.html
+2025-05-21 01:04:31,044 - __main__ - INFO - Sepsis Early Warning System Visualization Completed
+HTML report generated: results/sepsis_prediction_results.html
+Visualization and report generation successful, please check the results directory
+2025-05-21 01:04:31,394 - __main__ - INFO - Generated visualization file: results/sepsis_prediction_results.html (4.67 KB)
+2025-05-21 01:04:31,394 - __main__ - INFO - Generated visualization file: results/figures/roc_curve.png (129.60 KB)
+2025-05-21 01:04:31,395 - __main__ - INFO - Generated visualization file: results/figures/risk_trajectories.png (318.96 KB)
+2025-05-21 01:04:31,395 - __main__ - INFO - Generated visualization file: results/figures/confusion_matrix.png (82.58 KB)
+2025-05-21 01:04:31,395 - __main__ - INFO - Generated visualization file: results/figures/feature_importance.png (138.04 KB)
+2025-05-21 01:04:31,395 - __main__ - WARNING - Expected visualization file does not exist: results/figures/model_architecture.png
+2025-05-21 01:04:31,395 - __main__ - INFO - Starting to analyze model performance and results...
+2025-05-21 01:04:31,396 - __main__ - INFO - Executing task: Analyze model results
+2025-05-21 01:04:31,988 - __main__ - INFO - Command completed successfully: python -m scripts.analysis --full (Time: 0.59 seconds)
+2025-05-21 01:04:31,988 - __main__ - INFO - Output: ��ʼ���а�������...
+���а�������ʱ����: No module named 'torch'
+2025-05-21 01:04:31,989 - __main__ - INFO - Process execution status:
+2025-05-21 01:04:31,989 - __main__ - INFO - - Database derived tables: Success
+2025-05-21 01:04:31,989 - __main__ - INFO - - Data extraction: Failure
+2025-05-21 01:04:31,990 - __main__ - INFO - - Model training: Failure
+2025-05-21 01:04:31,990 - __main__ - INFO - - Result visualization: Success
+2025-05-21 01:04:31,991 - __main__ - INFO - - Result analysis: Success
+2025-05-21 01:04:31,991 - __main__ - INFO - Starting to validate system completeness...
+2025-05-21 01:04:31,991 - __main__ - WARNING - System validation incomplete: Some components missing
+2025-05-21 01:04:31,991 - __main__ - INFO - Sepsis Early Warning System - Execution completed, Total time: 0.11 minutes
+2025-05-21 01:04:31,991 - __main__ - INFO - Generated critical files:
+2025-05-21 01:04:31,991 - __main__ - INFO - - data/processed/patient_features.csv: 4272.63 KB
+2025-05-21 01:04:31,991 - __main__ - INFO - - data/processed/sepsis_labels.csv: 111.67 KB
+2025-05-21 01:04:31,992 - __main__ - WARNING - - models/best_model.pt: File does not exist
+2025-05-21 01:04:31,992 - __main__ - WARNING - - results/predictions.csv: File does not exist
+2025-05-21 01:04:31,992 - __main__ - INFO - - results/figures/roc_curve.png: 129.60 KB
+2025-05-21 01:04:31,992 - __main__ - INFO - - results/sepsis_prediction_results.html: 4.67 KB
+2025-05-21 01:04:31,992 - __main__ - INFO - 
+Sepsis Early Warning System completed execution. System has the following features:
+1. Large dataset: Extracted data from MIMIC-IV includes data from many real patients
+2. High-quality training: Used 100 rounds of training, with learning rate scheduling and early stopping
+3. Advanced model architecture: Used neural network structure with multimodal fusion
+4. Detailed visualizations: Provided risk trajectories, feature importance, etc.
+5. Complete HTML report: Help doctors interpret model results
+
+Complete results can be viewed in the results directory, especially:
+- results/figures/: Various visualizations and performance charts
+

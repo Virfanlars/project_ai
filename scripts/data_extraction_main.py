@@ -42,7 +42,7 @@ except ImportError as e:
         
         # 创建默认配置，让脚本可以继续运行
         DATABASE_CONFIG = {
-            'host': '172.16.3.67',
+            'host': 'localhost',
             'port': 5432,
             'database': 'mimiciv',
             'user': 'postgres',

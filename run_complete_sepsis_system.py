@@ -180,7 +180,7 @@ def check_environment():
     logger.info("Attempting to check database connection directly...")
     
     # Get database connection info from environment variables or defaults
-    db_host = os.environ.get('MIMIC_DB_HOST', '172.16.3.67')
+    db_host = os.environ.get('MIMIC_DB_HOST', 'localhost')
     db_port = os.environ.get('MIMIC_DB_PORT', '5432')
     db_name = os.environ.get('MIMIC_DB_NAME', 'mimiciv')
     db_user = os.environ.get('MIMIC_DB_USER', 'postgres')
