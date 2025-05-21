@@ -49,11 +49,11 @@ pip install -r requirements.txt
 
 ```bash
 # Windows PowerShell
-$env:MIMIC_DB_HOST = "your_db_host"
-$env:MIMIC_DB_PORT = "your_db_port"
+$env:MIMIC_DB_HOST = "172.16.3.67"
+$env:MIMIC_DB_PORT = "5432"
 $env:MIMIC_DB_NAME = "mimiciv"
-$env:MIMIC_DB_USER = "your_username"
-$env:MIMIC_DB_PASSWORD = "your_password"
+$env:MIMIC_DB_USER = "postgres"
+$env:MIMIC_DB_PASSWORD = "123456"
 
 # 或者使用提供的脚本
 .\set_mimic_env.ps1
@@ -83,7 +83,7 @@ python scripts/fixed_extract_sepsis_data.py
 
 ```bash
 # 处理较小样本（1000名患者）
-python scripts/process_sepsis_data.py --sample_patients 1000
+python scripts/process_sepsis_data.py --sample_patients 3000
 ```
 
 ### 4. 转换数据格式

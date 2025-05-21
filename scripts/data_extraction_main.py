@@ -330,7 +330,7 @@ def main():
         os.makedirs('data/processed', exist_ok=True)
         
         # 保存结果
-    print("保存处理后的数据...")
+        print("保存处理后的数据...")
         patient_info.to_csv('data/processed/patient_info.csv', index=False)
         aligned_data.to_csv('data/processed/aligned_data.csv', index=False)
         

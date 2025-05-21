@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 # Database configuration for MIMIC-IV
 DATABASE_CONFIG = {
     # Real MIMIC-IV database connection info
-    'host': 'localhost',  # Database host
+    'host': '172.16.3.67',  # Database host
     'port': 5432,
     'database': 'mimiciv',
     'user': 'postgres',

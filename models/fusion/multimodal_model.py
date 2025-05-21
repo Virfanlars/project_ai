@@ -76,6 +76,8 @@ class SepsisTransformerModel(nn.Module):
             clinical_features = vitals_proj + labs_proj + drugs_proj + text_proj
             
             # 使用KG注意力模块融合
+            # 注意：clinical_features已经是3D张量 [batch_size, seq_len, hidden_dim]
+            # KGAttention已更新为支持处理序列数据
             enhanced_features, kg_attn_weights = self.kg_attention(
                 clinical_features, kg_embed
             )

@@ -210,22 +210,67 @@ def preprocess_features(patient_data, feature_config):
         drugs: 药物使用特征
         text_embed: 文本嵌入特征
     """
+    print("预处理特征数据...")
+    
     # 提取特征列
     vitals_cols = feature_config['vitals_columns']
     labs_cols = feature_config['labs_columns']
     drugs_cols = feature_config['drugs_columns']
     text_cols = feature_config['text_embed_columns']
     
-    # 提取特征并填充缺失值
-    vitals = patient_data[vitals_cols].fillna(0).values
-    labs = patient_data[labs_cols].fillna(0).values
-    drugs = patient_data[drugs_cols].fillna(0).values
+    # 检查并过滤不存在的列
+    available_vitals_cols = [col for col in vitals_cols if col in patient_data.columns]
+    available_labs_cols = [col for col in labs_cols if col in patient_data.columns]
+    available_drugs_cols = [col for col in drugs_cols if col in patient_data.columns]
     
-    # 提取文本嵌入（如果有）
-    if all(col in patient_data.columns for col in text_cols):
-        text_embed = patient_data[text_cols].fillna(0).values
+    print(f"可用生命体征列: {available_vitals_cols} (缺失: {set(vitals_cols) - set(available_vitals_cols)})")
+    print(f"可用实验室检查列: {available_labs_cols} (缺失: {set(labs_cols) - set(available_labs_cols)})")
+    print(f"可用药物列: {available_drugs_cols} (缺失: {set(drugs_cols) - set(available_drugs_cols)})")
+    
+    # 创建特征矩阵
+    n_samples = len(patient_data)
+    
+    # 处理生命体征特征
+    if available_vitals_cols:
+        vitals = patient_data[available_vitals_cols].fillna(0).values
+        # 如果有缺失的列，添加零列
+        if len(available_vitals_cols) < len(vitals_cols):
+            missing_cols = np.zeros((n_samples, len(vitals_cols) - len(available_vitals_cols)))
+            vitals = np.hstack([vitals, missing_cols])
     else:
-        # 如果没有文本嵌入，使用零向量
-        text_embed = np.zeros((len(patient_data), len(text_cols)))
+        vitals = np.zeros((n_samples, len(vitals_cols)))
+    
+    # 处理实验室检查特征
+    if available_labs_cols:
+        labs = patient_data[available_labs_cols].fillna(0).values
+        # 如果有缺失的列，添加零列
+        if len(available_labs_cols) < len(labs_cols):
+            missing_cols = np.zeros((n_samples, len(labs_cols) - len(available_labs_cols)))
+            labs = np.hstack([labs, missing_cols])
+    else:
+        labs = np.zeros((n_samples, len(labs_cols)))
+    
+    # 处理药物特征
+    if available_drugs_cols:
+        drugs = patient_data[available_drugs_cols].fillna(0).values
+        # 如果有缺失的列，添加零列
+        if len(available_drugs_cols) < len(drugs_cols):
+            missing_cols = np.zeros((n_samples, len(drugs_cols) - len(available_drugs_cols)))
+            drugs = np.hstack([drugs, missing_cols])
+    else:
+        drugs = np.zeros((n_samples, len(drugs_cols)))
+    
+    # 处理文本嵌入
+    available_text_cols = [col for col in text_cols if col in patient_data.columns]
+    if available_text_cols:
+        text_embed = patient_data[available_text_cols].fillna(0).values
+        # 如果有缺失的列，添加零列
+        if len(available_text_cols) < len(text_cols):
+            missing_cols = np.zeros((n_samples, len(text_cols) - len(available_text_cols)))
+            text_embed = np.hstack([text_embed, missing_cols])
+    else:
+        text_embed = np.zeros((n_samples, len(text_cols)))
+    
+    print(f"特征形状 - 生命体征: {vitals.shape}, 实验室检查: {labs.shape}, 药物: {drugs.shape}, 文本嵌入: {text_embed.shape}")
     
     return vitals, labs, drugs, text_embed 
