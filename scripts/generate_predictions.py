@@ -56,26 +56,7 @@ def generate_predictions():
         print(f"已加载测试集索引，共{len(test_indices)}个样本")
     except Exception as e:
         print(f"加载测试集索引失败: {e}")
-        print("使用随机生成的预测结果...")
-        # 生成随机预测结果
-        predictions = []
-        for i in range(150):  # 生成150个随机样本
-            patient_id = f"P{1000+i}"
-            for hour in range(12):  # 每个患者12小时
-                risk_score = np.random.beta(1, 5) if np.random.random() > 0.8 else np.random.beta(1, 10)
-                predictions.append({
-                    'patient_id': patient_id,
-                    'hour': hour,
-                    'predicted_risk': risk_score,
-                    'actual_label': 1 if np.random.random() < 0.15 else 0,
-                    'feature_importance': ','.join([f"{f}:{np.random.random():.4f}" for f in ['HR', 'SBP', 'WBC', 'Lactate']])
-                })
-        
-        # 保存预测结果
-        df = pd.DataFrame(predictions)
-        os.makedirs('results', exist_ok=True)
-        df.to_csv('results\\predictions.csv', index=False)
-        print(f"已生成随机预测结果并保存到results\\predictions.csv，共{len(predictions)}条记录")
+        print("错误：无法继续生成预测，请确保已完成模型训练")
         return
     
     # 生成实际预测结果
@@ -98,7 +79,7 @@ def generate_predictions():
     # ... 处理代码与analysis.py中相同 ...
 
     # 从测试集索引中选择患者
-    selected_test_indices = test_indices[:100].numpy()  # 选择前100个测试样本
+    selected_test_indices = test_indices[:100]  # 直接使用列表切片，移除.numpy()调用
     predictions = []
 
     # 批量进行预测，以提高效率
@@ -132,12 +113,18 @@ def generate_predictions():
             patient_drugs = drugs[patient_data_indices]
             patient_text_embeds = text_embeds[patient_data_indices]
             
-            # 获取时间信息
+            # 获取时间信息和真实标签
             sepsis_data_indices = sepsis_labels['subject_id'] == patient_id
             if 'hour' in sepsis_labels.columns:
                 patient_times = sepsis_labels.loc[sepsis_data_indices, 'hour'].values
             else:
                 patient_times = np.arange(len(patient_vitals))
+                
+            # 获取真实标签
+            if 'sepsis_label' in sepsis_labels.columns:
+                patient_actual_labels = sepsis_labels.loc[sepsis_data_indices, 'sepsis_label'].values
+            else:
+                patient_actual_labels = np.zeros(len(patient_times))
             
             seq_len = min(len(patient_times), max_seq_len, len(patient_vitals))
             if seq_len == 0:
@@ -191,8 +178,6 @@ def generate_predictions():
             risk_scores = outputs.cpu().numpy()
         
         # 计算特征重要性
-        # 这里我们生成一些示例特征重要性数据
-        # 真实系统应该有一个SHAP或类似方法的实现
         for b, patient_id in enumerate(batch_patient_ids):
             for h in range(12):  # 取前12小时
                 if h >= risk_scores.shape[1]:
@@ -202,25 +187,35 @@ def generate_predictions():
                 risk_score = float(risk_scores[b, h, 0]) if risk_scores[b, h, 0] <= 1.0 else 1.0
                 risk_score = max(0.0, min(1.0, risk_score))  # 确保在[0,1]范围内
                 
-                # 生成特征重要性（基于特征的相对重要性）
+                # 获取实际标签 - 使用真实标签
+                actual_label = 0
+                patient_data_indices = patient_features['subject_id'] == int(patient_id)
+                sepsis_data_indices = sepsis_labels['subject_id'] == int(patient_id)
+                if len(sepsis_data_indices) > 0 and h < len(sepsis_labels.loc[sepsis_data_indices, 'sepsis_label'].values):
+                    actual_label = int(sepsis_labels.loc[sepsis_data_indices, 'sepsis_label'].values[h])
+                
+                # 计算特征重要性
+                # TODO: 实现基于SHAP或特征归因的真实特征重要性计算
+                # 目前仅使用基本特征作为占位符
                 feature_importances = {
-                    '心率': float(np.abs(batch_vitals[b, h, 0].cpu().numpy()) * 0.25),
-                    '呼吸频率': float(np.abs(batch_vitals[b, h, 1].cpu().numpy()) * 0.2),
-                    '收缩压': float(np.abs(batch_vitals[b, h, 2].cpu().numpy()) * 0.15),
-                    'WBC': float(np.abs(batch_labs[b, h, 0].cpu().numpy()) * 0.3),
-                    '乳酸': float(np.abs(batch_labs[b, h, 1].cpu().numpy()) * 0.1)
+                    '心率': 0.0,
+                    '呼吸频率': 0.0,
+                    '收缩压': 0.0,
+                    'WBC': 0.0,
+                    '乳酸': 0.0
                 }
                 
-                # 归一化
-                total = sum(feature_importances.values()) or 1.0  # 避免除以零
-                feature_importances = {k: v/total for k, v in feature_importances.items()}
+                # 从模型结果中提取真实重要性 - 这一部分需要根据您的模型架构实现
+                # 这里暂时使用相等的权重
+                for feature in feature_importances:
+                    feature_importances[feature] = 0.2  # 平均分配权重
                 
                 # 添加到预测结果
                 predictions.append({
                     'patient_id': patient_id,
                     'hour': h,
                     'predicted_risk': risk_score,
-                    'actual_label': 1 if risk_score > 0.7 else 0,  # 假设标签（实际系统应使用真实标签）
+                    'actual_label': actual_label,
                     'feature_importance': ','.join([f"{k}:{v:.4f}" for k, v in feature_importances.items()])
                 })
         

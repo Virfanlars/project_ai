@@ -1,11 +1,10 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from models.knowledge_graph.kg_attention import KGAttention
 
 class SepsisTransformerModel(nn.Module):
     def __init__(self, vitals_dim, lab_dim, drug_dim, text_dim, kg_dim, 
-                 hidden_dim=128, num_heads=4, num_layers=2, dropout=0.1):
+                 hidden_dim=64, num_heads=2, num_layers=1, dropout=0.2):
         super(SepsisTransformerModel, self).__init__()
         
         # 各模态特征维度
@@ -16,19 +15,42 @@ class SepsisTransformerModel(nn.Module):
         self.kg_dim = kg_dim
         
         # 模态特征投影层
-        self.vitals_proj = nn.Linear(vitals_dim, hidden_dim)
-        self.lab_proj = nn.Linear(lab_dim, hidden_dim)
-        self.drug_proj = nn.Linear(drug_dim, hidden_dim)
-        self.text_proj = nn.Linear(text_dim, hidden_dim)
+        self.vitals_proj = nn.Sequential(
+            nn.Linear(vitals_dim, hidden_dim),
+            nn.BatchNorm1d(hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout)
+        )
+        
+        self.lab_proj = nn.Sequential(
+            nn.Linear(lab_dim, hidden_dim),
+            nn.BatchNorm1d(hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout)
+        )
+        
+        self.drug_proj = nn.Sequential(
+            nn.Linear(drug_dim, hidden_dim),
+            nn.BatchNorm1d(hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout)
+        )
+        
+        self.text_proj = nn.Sequential(
+            nn.Linear(text_dim, hidden_dim),
+            nn.BatchNorm1d(hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout)
+        )
         
         # 位置编码
         self.position_encoder = nn.Embedding(24*7, hidden_dim)  # 假设最长为一周的数据
         
-        # Transformer编码器
+        # 简化: 使用较少的Transformer层
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=hidden_dim,
             nhead=num_heads,
-            dim_feedforward=hidden_dim*4,
+            dim_feedforward=hidden_dim*2,  # 减小前馈网络大小
             dropout=dropout,
             batch_first=True
         )
@@ -37,61 +59,48 @@ class SepsisTransformerModel(nn.Module):
         # 输出层
         self.output_layer = nn.Sequential(
             nn.Linear(hidden_dim, hidden_dim//2),
+            nn.BatchNorm1d(hidden_dim//2),
             nn.ReLU(),
             nn.Dropout(dropout),
             nn.Linear(hidden_dim//2, 1),
-            nn.Sigmoid()
+            nn.Sigmoid()  # 保留sigmoid获得概率输出
         )
         
-        # 替换简单的KG投影为注意力融合模块
-        self.use_kg_attention = True  # 配置选项
-        if self.use_kg_attention:
-            self.kg_attention = KGAttention(
-                feature_dim=hidden_dim,
-                kg_dim=kg_dim,
-                hidden_dim=hidden_dim//2
-            )
-        else:
-            # 保留原有简单投影作为备选
-            self.kg_proj = nn.Linear(kg_dim, hidden_dim)
+        # 简化知识图谱处理 - 使用简单投影
+        self.kg_proj = nn.Linear(kg_dim, hidden_dim)
     
     def forward(self, vitals, labs, drugs, text_embed, kg_embed, time_indices):
-        # 各模态特征投影
-        vitals_proj = self.vitals_proj(vitals)
-        labs_proj = self.lab_proj(labs)
-        drugs_proj = self.drug_proj(drugs)
-        text_proj = self.text_proj(text_embed)
+        batch_size, seq_len, _ = vitals.shape
         
-        # 特殊处理知识图谱嵌入 - 使用注意力机制
-        batch_size, seq_len, _ = vitals_proj.shape
+        # 重塑张量以适应BatchNorm1d (expects [batch, features])
+        # 处理各模态特征投影
+        vitals_flat = vitals.reshape(-1, self.vitals_dim)  # [batch*seq, vitals_dim]
+        vitals_proj_flat = self.vitals_proj(vitals_flat)  # [batch*seq, hidden]
+        vitals_proj = vitals_proj_flat.reshape(batch_size, seq_len, -1)  # [batch, seq, hidden]
         
-        if self.use_kg_attention:
-            # 假设kg_embed是[batch_size, num_entities, kg_dim]格式
-            # 如果不是，需要先进行格式转换
-            if len(kg_embed.shape) == 2:
-                # 如果是[batch_size, kg_dim]格式，扩展为单实体
-                kg_embed = kg_embed.unsqueeze(1)  # [batch_size, 1, kg_dim]
-            
-            # 先融合其他临床特征
-            clinical_features = vitals_proj + labs_proj + drugs_proj + text_proj
-            
-            # 使用KG注意力模块融合
-            # 注意：clinical_features已经是3D张量 [batch_size, seq_len, hidden_dim]
-            # KGAttention已更新为支持处理序列数据
-            enhanced_features, kg_attn_weights = self.kg_attention(
-                clinical_features, kg_embed
-            )
-            
-            # 存储注意力权重以便解释(如需要)
-            self._kg_attention_weights = kg_attn_weights
-            
-            # 使用增强特征进行预测
-            fused_features = enhanced_features
-        else:
-            # 原有的简单融合方式
-            kg_proj_flat = self.kg_proj(kg_embed)  # [batch_size, hidden_dim]
-            kg_proj = kg_proj_flat.unsqueeze(1).expand(-1, seq_len, -1)
-            fused_features = vitals_proj + labs_proj + drugs_proj + text_proj + kg_proj
+        labs_flat = labs.reshape(-1, self.lab_dim)
+        labs_proj_flat = self.lab_proj(labs_flat)
+        labs_proj = labs_proj_flat.reshape(batch_size, seq_len, -1)
+        
+        drugs_flat = drugs.reshape(-1, self.drug_dim)
+        drugs_proj_flat = self.drug_proj(drugs_flat)
+        drugs_proj = drugs_proj_flat.reshape(batch_size, seq_len, -1)
+        
+        # 处理文本嵌入 (适应改变)
+        if text_embed.dim() == 3:  # [batch, seq, text_dim]
+            text_flat = text_embed.reshape(-1, self.text_dim)
+            text_proj_flat = self.text_proj(text_flat)
+            text_proj = text_proj_flat.reshape(batch_size, seq_len, -1)
+        else:  # [batch, text_dim]
+            text_proj_flat = self.text_proj(text_embed)  # [batch, hidden]
+            text_proj = text_proj_flat.unsqueeze(1).expand(-1, seq_len, -1)  # [batch, seq, hidden]
+        
+        # 简化知识图谱处理
+        kg_proj_flat = self.kg_proj(kg_embed)  # [batch, hidden]
+        kg_proj = kg_proj_flat.unsqueeze(1).expand(-1, seq_len, -1)  # [batch, seq, hidden]
+        
+        # 特征融合
+        fused_features = vitals_proj + labs_proj + drugs_proj + text_proj + kg_proj
         
         # 添加位置编码
         position_encoded = self.position_encoder(time_indices)
@@ -104,6 +113,9 @@ class SepsisTransformerModel(nn.Module):
         transformer_out = self.transformer(features, src_key_padding_mask=padding_mask)
         
         # 输出每个时间点的预测概率
-        outputs = self.output_layer(transformer_out)
+        # 重塑以适应BatchNorm1d
+        out_flat = transformer_out.reshape(-1, transformer_out.size(-1))
+        out_flat = self.output_layer(out_flat)
+        outputs = out_flat.reshape(batch_size, seq_len, -1)
         
         return outputs

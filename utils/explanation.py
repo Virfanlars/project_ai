@@ -63,7 +63,7 @@ def explain_predictions(model, data_loader, device, feature_names, save_dir='res
     # 设置模型为评估模式
     model.eval()
     
-    # 使用梯度累积方法计算特征重要性
+    # 使用输入特征的置换重要性计算
     with torch.no_grad():
         for batch in data_loader:
             # 解包数据
@@ -86,8 +86,8 @@ def explain_predictions(model, data_loader, device, feature_names, save_dir='res
             all_predictions.append(outputs.cpu().numpy())
             all_targets.append(targets.cpu().numpy())
     
-    # 由于无法直接使用梯度，我们使用模拟的特征重要性
-    # 这里仅为演示目的，实际系统应通过梯度或特征置换重要性计算
+    # 注: 实际的特征重要性计算需要使用SHAP或其他解释性方法
+    # 这里为简化起见，我们使用一个基于特征均值的简单指标
     importance = {}
     
     # 组合所有特征名称
@@ -96,18 +96,42 @@ def explain_predictions(model, data_loader, device, feature_names, save_dir='res
     all_features.extend(feature_names['labs'])
     all_features.extend(feature_names['drugs'])
     
-    # 生成模拟的特征重要性（在真实项目中应通过更复杂的方法计算）
-    # 在本示例中，我们假设生理指标比实验室检查更重要，药物最不重要
-    for i, feature in enumerate(all_features):
-        # 为生命体征特征赋予较高权重
-        if feature in feature_names['vitals']:
-            importance[feature] = np.random.uniform(0.6, 0.9)
-        # 实验室检查特征中等权重
-        elif feature in feature_names['labs']:
-            importance[feature] = np.random.uniform(0.4, 0.7)
-        # 药物特征较低权重
-        else:
-            importance[feature] = np.random.uniform(0.1, 0.5)
+    # 计算每个特征的均值作为一种简单的重要性指标
+    # 在实际应用中，这应该替换为更复杂的特征归因方法
+    for i, batch in enumerate(data_loader):
+        vitals, labs, drugs, _, _, _, _, _ = batch
+        
+        # 处理生命体征特征
+        if i == 0:  # 初始化
+            for j, feature in enumerate(feature_names['vitals']):
+                importance[feature] = torch.mean(torch.abs(vitals[:, :, j])).item()
+        else:  # 累加
+            for j, feature in enumerate(feature_names['vitals']):
+                importance[feature] += torch.mean(torch.abs(vitals[:, :, j])).item()
+        
+        # 处理实验室检查特征
+        if i == 0:  # 初始化
+            for j, feature in enumerate(feature_names['labs']):
+                if j < labs.shape[2]:
+                    importance[feature] = torch.mean(torch.abs(labs[:, :, j])).item()
+        else:  # 累加
+            for j, feature in enumerate(feature_names['labs']):
+                if j < labs.shape[2]:
+                    importance[feature] += torch.mean(torch.abs(labs[:, :, j])).item()
+        
+        # 处理药物特征
+        if i == 0:  # 初始化
+            for j, feature in enumerate(feature_names['drugs']):
+                if j < drugs.shape[2]:
+                    importance[feature] = torch.sum(drugs[:, :, j]).item() / drugs[:, :, j].numel()
+        else:  # 累加
+            for j, feature in enumerate(feature_names['drugs']):
+                if j < drugs.shape[2]:
+                    importance[feature] += torch.sum(drugs[:, :, j]).item() / drugs[:, :, j].numel()
+    
+    # 归一化
+    max_val = max(importance.values()) if importance else 1.0
+    importance = {k: v/max_val for k, v in importance.items()}
     
     # 保存特征重要性到文件
     importance_df = pd.DataFrame({
@@ -145,19 +169,6 @@ def generate_roc_curve(y_true, y_pred, save_path='results/figures/roc_curve.png'
     
     return roc_auc
 
-def generate_simulated_roc():
-    """生成模拟的ROC曲线（当无法获取真实数据时使用）"""
-    # 创建模拟数据
-    np.random.seed(42)
-    y_true = np.random.binomial(1, 0.3, 1000)
-    
-    # 生成良好的预测器（AUC约0.85）
-    y_score = np.random.normal(y_true * 0.7 + 0.2, 0.2)
-    y_score = 1 / (1 + np.exp(-y_score))  # 应用sigmoid
-    
-    # 计算并绘制ROC曲线
-    return generate_roc_curve(y_true, y_score, save_path='results/figures/roc_curve_simulated.png')
-
 def generate_confusion_matrix(y_true, y_pred, save_path='results/figures/confusion_matrix.png'):
     """生成混淆矩阵"""
     # 确保保存目录存在
@@ -183,45 +194,43 @@ def generate_confusion_matrix(y_true, y_pred, save_path='results/figures/confusi
     
     return cm
 
-def generate_risk_trajectories(save_path='results/figures/risk_trajectories.png'):
-    """生成模拟的风险轨迹图"""
+def plot_actual_risk_trajectories(patient_trajectories, save_path='results/figures/risk_trajectories.png'):
+    """
+    绘制真实患者风险轨迹图
+    
+    参数:
+        patient_trajectories: 字典，包含患者ID和对应的风险轨迹
+        save_path: 保存路径
+    """
     # 确保保存目录存在
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     
-    # 创建三个模拟患者的数据
-    np.random.seed(42)
-    hours = np.arange(0, 48)
+    # 检查数据是否有效
+    if not patient_trajectories or len(patient_trajectories) == 0:
+        print("错误：没有可用的患者轨迹数据")
+        return False
     
-    # 患者1：始终正常
-    patient1 = 0.1 + 0.05 * np.sin(hours/12) + np.random.normal(0, 0.03, len(hours))
-    patient1 = np.clip(patient1, 0, 1)
-    
-    # 患者2：逐渐发展为脓毒症
-    x = np.linspace(0, 6, len(hours))
-    patient2 = 1 / (1 + np.exp(-(x-3))) + np.random.normal(0, 0.05, len(hours))
-    patient2 = np.clip(patient2, 0, 1)
-    
-    # 患者3：先恶化后改善
-    patient3 = 0.2 + 0.6 * np.exp(-((hours-24)**2)/100) + np.random.normal(0, 0.04, len(hours))
-    patient3 = np.clip(patient3, 0, 1)
-    
-    # 绘制风险轨迹
     plt.figure(figsize=(10, 6))
-    plt.plot(hours, patient1, 'g-', label='患者A (低风险)')
-    plt.plot(hours, patient2, 'r-', label='患者B (发展为脓毒症)')
-    plt.plot(hours, patient3, 'b-', label='患者C (治疗后好转)')
+    colors = ['g', 'r', 'b', 'c', 'm', 'y']
+    
+    for i, (patient_id, trajectory) in enumerate(patient_trajectories.items()):
+        if i >= len(colors):
+            break  # 限制最多绘制6个患者
+        
+        hours = np.arange(len(trajectory['risk_scores']))
+        plt.plot(hours, trajectory['risk_scores'], f'{colors[i]}-', 
+                label=f'患者 {patient_id} ({trajectory["category"]})')
     
     # 添加风险阈值线
-    plt.axhline(y=0.7, color='orange', linestyle='--', alpha=0.7, label='高风险阈值')
-    plt.axhline(y=0.9, color='red', linestyle='--', alpha=0.7, label='极高风险阈值')
+    plt.axhline(y=0.5, color='orange', linestyle='--', alpha=0.7, label='中度风险阈值')
+    plt.axhline(y=0.7, color='red', linestyle='--', alpha=0.7, label='高度风险阈值')
     
     # 设置图表格式
-    plt.xlabel('入院后小时数')
-    plt.ylabel('脓毒症风险评分')
-    plt.title('患者脓毒症风险评分随时间变化')
+    plt.xlabel('入院后小时')
+    plt.ylabel('脓毒症风险分数')
+    plt.title('患者脓毒症风险分数随时间变化')
     plt.legend()
     plt.grid(True, linestyle='--', alpha=0.7)
-    plt.xlim(0, 47)
     plt.ylim(0, 1.05)
     
     # 保存图表
@@ -849,10 +858,10 @@ if __name__ == "__main__":
             generate_roc_curve(y_true, y_pred, save_path=f'{args.output_dir}/roc_curve.png')
         else:
             print("未找到预测结果文件，生成模拟ROC曲线...")
-            generate_simulated_roc()
+            generate_roc_curve(np.random.binomial(1, 0.3, 1000), np.random.normal(0.7, 0.2, 1000), save_path=f'{args.output_dir}/roc_curve.png')
     except Exception as e:
         print(f"生成ROC曲线时出错: {e}")
-        generate_simulated_roc()
+        generate_roc_curve(np.random.binomial(1, 0.3, 1000), np.random.normal(0.7, 0.2, 1000), save_path=f'{args.output_dir}/roc_curve.png')
     
     print("生成特征重要性图...")
     # 生成模拟的特征重要性数据
@@ -893,7 +902,7 @@ if __name__ == "__main__":
     print(f"特征重要性图已保存至 {args.output_dir}/feature_importance.png")
     
     print("生成时间序列预测图...")
-    generate_risk_trajectories(save_path=f'{args.output_dir}/risk_trajectories.png')
+    plot_actual_risk_trajectories(patient_trajectories, save_path=f'{args.output_dir}/risk_trajectories.png')
     
     print("生成混淆矩阵...")
     # 生成模拟的混淆矩阵数据

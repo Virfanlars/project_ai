@@ -5,6 +5,7 @@ import json
 import torch
 from torch.utils.data import Dataset, DataLoader
 from datetime import datetime, timedelta
+from sklearn.preprocessing import StandardScaler
 
 def load_structured_data(use_sample_data=False):
     """
@@ -36,20 +37,9 @@ def load_structured_data(use_sample_data=False):
         with open('data/processed/time_axis.json', 'r') as f:
             time_axis = json.load(f)
     else:
-        print("本地数据文件不存在，生成示例数据...")
-        
-        # 生成示例数据
-        patient_features, sepsis_labels, kg_embeddings, time_axis = generate_sample_data()
-        
-        # 创建保存目录
-        os.makedirs('data/processed', exist_ok=True)
-        
-        # 保存示例数据
-        patient_features.to_csv('data/processed/patient_features.csv', index=False)
-        sepsis_labels.to_csv('data/processed/sepsis_labels.csv', index=False)
-        np.save('data/processed/kg_embeddings.npy', kg_embeddings)
-        with open('data/processed/time_axis.json', 'w') as f:
-            json.dump(time_axis, f)
+        print("错误：找不到必要的数据文件")
+        print("请确保数据处理步骤已完成，并且数据文件存在于 data/processed/ 目录")
+        return None, None, None, None
     
     return patient_features, sepsis_labels, kg_embeddings, time_axis
 
@@ -230,9 +220,16 @@ def preprocess_features(patient_data, feature_config):
     # 创建特征矩阵
     n_samples = len(patient_data)
     
-    # 处理生命体征特征
+    # 处理生命体征特征 - 使用均值填充
     if available_vitals_cols:
-        vitals = patient_data[available_vitals_cols].fillna(0).values
+        # 计算每个特征的均值，忽略NaN
+        vitals_mean = patient_data[available_vitals_cols].mean(skipna=True)
+        # 使用均值填充
+        vitals = patient_data[available_vitals_cols].fillna(vitals_mean).values
+        # 标准化
+        vitals_scaler = StandardScaler()
+        vitals = vitals_scaler.fit_transform(vitals)
+        
         # 如果有缺失的列，添加零列
         if len(available_vitals_cols) < len(vitals_cols):
             missing_cols = np.zeros((n_samples, len(vitals_cols) - len(available_vitals_cols)))
@@ -240,9 +237,16 @@ def preprocess_features(patient_data, feature_config):
     else:
         vitals = np.zeros((n_samples, len(vitals_cols)))
     
-    # 处理实验室检查特征
+    # 处理实验室检查特征 - 使用均值填充
     if available_labs_cols:
-        labs = patient_data[available_labs_cols].fillna(0).values
+        # 计算每个特征的均值，忽略NaN
+        labs_mean = patient_data[available_labs_cols].mean(skipna=True)
+        # 使用均值填充
+        labs = patient_data[available_labs_cols].fillna(labs_mean).values
+        # 标准化
+        labs_scaler = StandardScaler()
+        labs = labs_scaler.fit_transform(labs)
+        
         # 如果有缺失的列，添加零列
         if len(available_labs_cols) < len(labs_cols):
             missing_cols = np.zeros((n_samples, len(labs_cols) - len(available_labs_cols)))
@@ -250,7 +254,7 @@ def preprocess_features(patient_data, feature_config):
     else:
         labs = np.zeros((n_samples, len(labs_cols)))
     
-    # 处理药物特征
+    # 处理药物特征 - 二元特征，使用0填充
     if available_drugs_cols:
         drugs = patient_data[available_drugs_cols].fillna(0).values
         # 如果有缺失的列，添加零列
@@ -260,17 +264,14 @@ def preprocess_features(patient_data, feature_config):
     else:
         drugs = np.zeros((n_samples, len(drugs_cols)))
     
-    # 处理文本嵌入
+    # 处理文本嵌入特征
     available_text_cols = [col for col in text_cols if col in patient_data.columns]
     if available_text_cols:
-        text_embed = patient_data[available_text_cols].fillna(0).values
-        # 如果有缺失的列，添加零列
-        if len(available_text_cols) < len(text_cols):
-            missing_cols = np.zeros((n_samples, len(text_cols) - len(available_text_cols)))
-            text_embed = np.hstack([text_embed, missing_cols])
+        text_embeds = patient_data[available_text_cols].fillna(0).values
     else:
-        text_embed = np.zeros((n_samples, len(text_cols)))
+        print("警告：找不到文本嵌入列，使用全零向量")
+        # 使用最小维度作为替代
+        text_dim = feature_config.get('text_dim', 32)
+        text_embeds = np.zeros((n_samples, text_dim))
     
-    print(f"特征形状 - 生命体征: {vitals.shape}, 实验室检查: {labs.shape}, 药物: {drugs.shape}, 文本嵌入: {text_embed.shape}")
-    
-    return vitals, labs, drugs, text_embed 
+    return vitals, labs, drugs, text_embeds

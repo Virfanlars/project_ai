@@ -4,166 +4,92 @@ def train_and_evaluate_model():
     from utils.dataset import SepsisDataset
     from models.fusion.multimodal_model import SepsisTransformerModel
     from utils.evaluation import evaluate_sepsis_model
-    from config import FEATURE_CONFIG, MODEL_CONFIG, TRAIN_CONFIG
+    from config import FEATURE_CONFIG, MODEL_CONFIG, TRAIN_CONFIG, DATA_CONFIG
     
     import torch
+    import torch.nn as nn
     from torch.utils.data import DataLoader, random_split
     import json
     import numpy as np
     import os
     
-    # 1. 加载数据
-    print("加载处理好的数据...")
-    patient_features, sepsis_labels, kg_embeddings, time_axis = load_structured_data()
-    
-    # 2. 创建数据集
-    print("创建数据集...")
-    
-    # 使用preprocess_features函数处理特征数据
-    vitals, labs, drugs, text_embeds = preprocess_features(patient_features, FEATURE_CONFIG)
-    
-    # 从sepsis_labels中提取时间索引和目标值
-    if 'hour' in sepsis_labels.columns:
-        time_indices = sepsis_labels['hour'].values
-    elif 'hours_since_admission' in sepsis_labels.columns:
-        time_indices = sepsis_labels['hours_since_admission'].values.astype(int)
-    else:
-        print("警告：在sepsis_labels中找不到时间列，使用默认索引")
-        time_indices = np.arange(1, len(sepsis_labels) + 1)
-    
-    # 重塑为[num_patients, max_seq_len]格式，或创建每个患者的序列
-    patient_ids = patient_features['subject_id'].unique()
-    max_seq_len = 72  # 默认最大序列长度
-    print(f"总数据量: {len(patient_features)}, 患者数量: {len(patient_ids)}")
-    
-    # 检查text_embeds的维度是否合适，如果过大则降维到合理大小
-    if text_embeds.shape[1] > MODEL_CONFIG['text_dim']:
-        print(f"文本嵌入维度过大 ({text_embeds.shape[1]}), 将截断至 {MODEL_CONFIG['text_dim']} 维度")
-        text_embeds = text_embeds[:, :MODEL_CONFIG['text_dim']]
-    
-    # 检查kg_embeds的维度是否合适，如果需要调整形状
-    # 将kg_embeds调整为[batch_size, num_entities, kg_dim]格式
-    if len(kg_embeddings.shape) == 2 and kg_embeddings.shape[0] > 1:
-        print(f"将kg_embeds从{kg_embeddings.shape}转换为期望的扩展形式")
-        # 创建一个变量来保存扩展后的张量
-        kg_embeds_expanded = np.zeros((kg_embeddings.shape[0], 1, kg_embeddings.shape[1]))
-        for i in range(kg_embeddings.shape[0]):
-            kg_embeds_expanded[i, 0, :] = kg_embeddings[i, :]
-        kg_embeddings = kg_embeds_expanded
-        print(f"调整后的kg_embeds形状: {kg_embeddings.shape}")
-    
-    # 初始化结果数组
-    reshaped_vitals = np.zeros((len(patient_ids), max_seq_len, vitals.shape[1]))
-    reshaped_labs = np.zeros((len(patient_ids), max_seq_len, labs.shape[1]))
-    reshaped_drugs = np.zeros((len(patient_ids), max_seq_len, drugs.shape[1]))
-    reshaped_time_indices = np.zeros((len(patient_ids), max_seq_len))
-    reshaped_targets = np.zeros((len(patient_ids), max_seq_len))
-    patient_id_list = []
-    
-    # 为每个患者创建文本嵌入和知识图谱嵌入
-    kg_dim = kg_embeddings.shape[-1]  # 获取最后一个维度
-    if len(kg_embeddings.shape) == 3:  # 如果是3D格式 [num_entities, num_concepts, kg_dim]
-        print(f"知识图谱嵌入已经是3D格式: {kg_embeddings.shape}")
-        kg_embeds_per_patient = np.zeros((len(patient_ids), 1, kg_dim))
-    else:  # 如果是2D格式 [num_concepts, kg_dim]
-        print(f"知识图谱嵌入是2D格式: {kg_embeddings.shape}")
-        kg_embeds_per_patient = np.zeros((len(patient_ids), kg_dim))
-    
-    # 文本嵌入
-    text_embeds_per_patient = np.zeros((len(patient_ids), text_embeds.shape[1]))
-    
-    print(f"初始化每个患者的文本嵌入维度: {text_embeds_per_patient.shape}")
-    print(f"初始化每个患者的知识图谱嵌入维度: {kg_embeds_per_patient.shape}")
-    
-    # 按患者ID分组，填充数组
-    for i, patient_id in enumerate(patient_ids):
-        # 获取患者数据
-        patient_data_indices = patient_features['subject_id'] == patient_id
-        sepsis_data_indices = sepsis_labels['subject_id'] == patient_id
-        
-        patient_id_list.append(str(patient_id))
-        
-        # 获取患者的特征数据
-        patient_vitals = vitals[patient_data_indices]
-        patient_labs = labs[patient_data_indices]
-        patient_drugs = drugs[patient_data_indices]
-        
-        # 获取患者的文本嵌入（取平均值）
-        if len(text_embeds[patient_data_indices]) > 0:
-            text_embeds_per_patient[i] = np.mean(text_embeds[patient_data_indices], axis=0)
-        
-        # 获取患者的知识图谱嵌入
-        if len(kg_embeddings.shape) == 3:  # 如果是3D格式 [num_entities, num_concepts, kg_dim]
-            if len(kg_embeddings) > 0:
-                # 只使用第一个实体的嵌入
-                kg_embeds_per_patient[i, 0, :] = kg_embeddings[0, 0, :]
-        else:  # 如果是2D格式 [num_concepts, kg_dim]
-            if len(kg_embeddings) > 0:
-                kg_embeds_per_patient[i] = kg_embeddings[0]
-        
-        # 获取时间索引
-        patient_times = time_indices[sepsis_data_indices]
-        seq_len = min(len(patient_times), max_seq_len, len(patient_vitals))
-        
-        if seq_len > 0:
-            # 填充特征数据
-            reshaped_vitals[i, :seq_len] = patient_vitals[:seq_len]
-            reshaped_labs[i, :seq_len] = patient_labs[:seq_len]
-            reshaped_drugs[i, :seq_len] = patient_drugs[:seq_len]
-            reshaped_time_indices[i, :seq_len] = np.arange(1, seq_len + 1)  # 从1开始的序列索引
-            
-            # 获取目标值
-            if 'sepsis_prediction_window' in sepsis_labels.columns:
-                patient_targets = sepsis_labels.loc[sepsis_data_indices, 'sepsis_prediction_window'].values
-            elif 'sepsis3' in sepsis_labels.columns:
-                patient_targets = sepsis_labels.loc[sepsis_data_indices, 'sepsis3'].values
-            elif 'sepsis_label' in sepsis_labels.columns:
-                patient_targets = sepsis_labels.loc[sepsis_data_indices, 'sepsis_label'].values
+    # 早停类定义
+    class EarlyStopping:
+        def __init__(self, patience=7, verbose=True, delta=0, path='models/best_model.pt'):
+            """
+            参数:
+                patience (int): 验证集损失多少个epoch不下降就停止训练
+                verbose (bool): 是否打印早停信息
+                delta (float): 认为是改进的最小变化
+                path (str): 模型保存路径
+            """
+            self.patience = patience
+            self.verbose = verbose
+            self.counter = 0
+            self.best_score = None
+            self.early_stop = False
+            self.val_loss_min = float('inf')
+            self.delta = delta
+            self.path = path
+
+        def __call__(self, val_loss, model):
+            score = -val_loss
+
+            if self.best_score is None:
+                self.best_score = score
+                self.save_checkpoint(val_loss, model)
+            elif score < self.best_score + self.delta:
+                self.counter += 1
+                if self.verbose:
+                    print(f'EarlyStopping 计数器: {self.counter}/{self.patience}')
+                if self.counter >= self.patience:
+                    self.early_stop = True
             else:
-                print(f"警告：患者 {patient_id} 在sepsis_labels中找不到目标列，使用全零目标")
-                patient_targets = np.zeros(len(patient_times))
-            
-            # 填充目标值
-            reshaped_targets[i, :seq_len] = patient_targets[:seq_len]
-    
-    # 使用处理后的数据
-    vitals = reshaped_vitals
-    labs = reshaped_labs
-    drugs = reshaped_drugs
+                self.best_score = score
+                self.save_checkpoint(val_loss, model)
+                self.counter = 0
 
-    # 将text_embeds从2D(batch_size, embed_dim)扩展为3D(batch_size, seq_len, embed_dim)
-    # 每个时间步使用相同的文本嵌入
-    text_embeds_expanded = np.zeros((len(patient_ids), max_seq_len, text_embeds_per_patient.shape[1]))
-    for i in range(len(patient_ids)):
-        # 对于每个患者，将其文本嵌入复制到所有时间步
-        for t in range(max_seq_len):
-            text_embeds_expanded[i, t, :] = text_embeds_per_patient[i, :]
-
-    # 使用扩展后的文本嵌入
-    text_embeds = text_embeds_expanded
-    print(f"- text_embeds (扩展后): {text_embeds.shape}")
-
-    # 使用处理后的其他数据
-    kg_embeds = kg_embeds_per_patient
-    time_indices = reshaped_time_indices
-    targets = reshaped_targets
-    patient_ids = patient_id_list
+        def save_checkpoint(self, val_loss, model):
+            '''验证损失decreased时保存模型'''
+            if self.verbose:
+                print(f'验证损失减小 ({self.val_loss_min:.6f} --> {val_loss:.6f}). 保存模型...')
+            torch.save(model.state_dict(), self.path)
+            self.val_loss_min = val_loss
     
-    print(f"处理后的数据形状:") 
-    print(f"- vitals: {vitals.shape}")
-    print(f"- labs: {labs.shape}")
-    print(f"- drugs: {drugs.shape}")
-    print(f"- text_embeds: {text_embeds.shape}")
-    print(f"- kg_embeds: {kg_embeds.shape}")
-    print(f"- time_indices: {time_indices.shape}")
-    print(f"- targets: {targets.shape}")
-    print(f"- 患者ID数: {len(patient_ids)}")
+    # 加载训练配置
+    batch_size = TRAIN_CONFIG.get('batch_size', 64)
+    learning_rate = TRAIN_CONFIG.get('learning_rate', 0.001)
+    num_epochs = TRAIN_CONFIG.get('num_epochs', 50)
+    early_stopping_patience = TRAIN_CONFIG.get('early_stopping_patience', 10)
+    weight_decay = TRAIN_CONFIG.get('weight_decay', 1e-4)
     
-    # 确保目录存在
-    os.makedirs('models', exist_ok=True)
-    os.makedirs('results', exist_ok=True)
+    # 打印配置信息
+    print(f"\n训练配置: 批量大小={batch_size}, 学习率={learning_rate}, 训练轮数={num_epochs}")
+    print(f"模型配置: hidden_dim={MODEL_CONFIG['hidden_dim']}, heads={MODEL_CONFIG['num_heads']}, layers={MODEL_CONFIG['num_layers']}")
     
-    # 创建SepsisDataset实例，按照其正确的参数格式
+    # 获取目标列配置
+    target_column = DATA_CONFIG.get('target_column', 'sepsis_label')
+    print(f"使用目标列: {target_column}")
+    
+    # 6. 根据配置加载数据
+    print("加载数据...")
+    vitals, labs, drugs, text_embeds, kg_embeds, time_indices, targets, patient_ids = load_data(
+        target_column=target_column  # 明确传递目标列参数
+    )
+    
+    # 检查标签分布
+    print('训练标签分布:', np.unique(targets, return_counts=True))
+    
+    # 打印特征统计信息
+    print('特征均值/标准差:')
+    print('vitals 均值:', np.nanmean(vitals), '方差:', np.nanvar(vitals))
+    print('labs 均值:', np.nanmean(labs), '方差:', np.nanvar(labs))
+    print('drugs 均值:', np.nanmean(drugs), '方差:', np.nanvar(drugs))
+    print('text_embeds 均值:', np.nanmean(text_embeds), '方差:', np.nanvar(text_embeds))
+    print('kg_embeds 均值:', np.nanmean(kg_embeds), '方差:', np.nanvar(kg_embeds))
+    
+    # 7. 创建数据集和数据加载器
+    # 创建SepsisDataset实例
     dataset = SepsisDataset(
         vitals=vitals,
         labs=labs,
@@ -174,7 +100,7 @@ def train_and_evaluate_model():
         targets=targets,
         patient_ids=patient_ids,
         max_seq_len=MODEL_CONFIG.get('max_seq_len', 72),
-        use_augmentation=TRAIN_CONFIG.get('use_data_augmentation', True)
+        use_augmentation=TRAIN_CONFIG.get('use_data_augmentation', False)  # 关闭数据增强简化调试
     )
     
     # 3. 数据集划分
@@ -267,17 +193,29 @@ def train_and_evaluate_model():
     device = torch.device(TRAIN_CONFIG['device'])
     model.to(device)
     
-    # 7. 定义损失函数和优化器
-    criterion = torch.nn.BCELoss()
-    optimizer = torch.optim.Adam(
-        model.parameters(), 
-        lr=TRAIN_CONFIG['learning_rate'],
-        weight_decay=TRAIN_CONFIG['weight_decay']
+    # 初始化优化器和损失函数
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    
+    # 计算类别权重
+    class_weights = TRAIN_CONFIG.get('class_weights', [0.5, 0.5])
+    weight_tensor = torch.tensor(class_weights, device=device)
+    criterion = nn.BCELoss(weight=None)  # 先不使用权重，观察基本性能
+    
+    print(f"类别权重: {class_weights}")
+    
+    # 初始化学习率调度器
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer, mode='min', factor=TRAIN_CONFIG.get('lr_scheduler_factor', 0.5), 
+        patience=TRAIN_CONFIG.get('lr_scheduler_patience', 5), verbose=True
+    )
+    
+    # 初始化早停
+    early_stopping = EarlyStopping(
+        patience=early_stopping_patience, verbose=True, path='models/best_model.pt'
     )
     
     # 8. 训练循环
     print("开始训练模型...")
-    num_epochs = TRAIN_CONFIG['num_epochs']
     best_val_loss = float('inf')
     
     for epoch in range(num_epochs):
@@ -357,6 +295,108 @@ def train_and_evaluate_model():
     print("数据集划分信息已保存到 models\\dataset_splits.pt")
     
     return model, test_dataset 
+
+def load_data(target_column='sepsis_label'):
+    """
+    加载数据，准备模型训练所需的特征和标签
+    
+    参数:
+        target_column: 目标列名，默认使用'sepsis_label'
+        
+    返回:
+        模型训练所需的各类特征和标签
+    """
+    # 在函数内部导入所需模块
+    from utils.data_loading import load_structured_data, preprocess_features
+    from config import FEATURE_CONFIG, MODEL_CONFIG, TRAIN_CONFIG, DATA_CONFIG
+    import numpy as np
+    
+    # 1. 加载数据
+    patient_features, sepsis_labels, kg_embeddings, time_axis = load_structured_data()
+    
+    # 确认目标列存在
+    if target_column not in sepsis_labels.columns:
+        print(f"警告: 目标列 '{target_column}' 不在sepsis_labels中。可用列: {sepsis_labels.columns}")
+        if 'sepsis_label' in sepsis_labels.columns:
+            print(f"使用'sepsis_label'作为替代目标")
+            target_column = 'sepsis_label'
+        elif 'sepsis3' in sepsis_labels.columns:
+            print(f"使用'sepsis3'作为替代目标")
+            target_column = 'sepsis3'
+        else:
+            raise ValueError(f"找不到合适的目标列")
+    
+    # 2. 提取特征
+    vitals, labs, drugs, text_embeds = preprocess_features(patient_features, FEATURE_CONFIG)
+    
+    # 3. 获取唯一患者ID
+    patient_ids = patient_features['subject_id'].unique()
+    
+    # 4. 设置最大序列长度
+    max_seq_len = DATA_CONFIG.get('max_seq_len', 72)
+    
+    # 5. 初始化数据结构
+    n_patients = len(patient_ids)
+    n_vital_features = vitals.shape[1]
+    n_lab_features = labs.shape[1]
+    n_drug_features = drugs.shape[1]
+    n_text_features = text_embeds.shape[1]
+    
+    reshaped_vitals = np.zeros((n_patients, max_seq_len, n_vital_features))
+    reshaped_labs = np.zeros((n_patients, max_seq_len, n_lab_features))
+    reshaped_drugs = np.zeros((n_patients, max_seq_len, n_drug_features))
+    reshaped_text_embeds = np.zeros((n_patients, max_seq_len, n_text_features))
+    reshaped_time_indices = np.zeros((n_patients, max_seq_len), dtype=int)
+    reshaped_targets = np.zeros((n_patients, max_seq_len))
+    
+    # 6. 处理每个患者的数据
+    print(f"处理{n_patients}名患者的数据...")
+    
+    for i, patient_id in enumerate(patient_ids):
+        if i % 500 == 0:
+            print(f"处理患者 {i}/{n_patients}...")
+        
+        # 获取患者数据
+        patient_data_indices = patient_features['subject_id'] == patient_id
+        patient_vitals = vitals[patient_data_indices]
+        patient_labs = labs[patient_data_indices]
+        patient_drugs = drugs[patient_data_indices]
+        patient_text_embeds = text_embeds[patient_data_indices]
+        
+        # 获取时间信息
+        sepsis_data_indices = sepsis_labels['subject_id'] == patient_id
+        
+        # 确保有匹配的标签数据
+        if sepsis_data_indices.sum() == 0:
+            print(f"警告：患者 {patient_id} 在sepsis_labels中没有匹配记录")
+            continue
+            
+        # 根据hour列获取时间索引
+        if 'hour' in sepsis_labels.columns:
+            patient_times = sepsis_labels.loc[sepsis_data_indices, 'hour'].values
+        else:
+            patient_times = np.arange(len(patient_vitals))
+            
+        # 获取目标值 - 使用指定的目标列
+        if target_column in sepsis_labels.columns:
+            patient_targets = sepsis_labels.loc[sepsis_data_indices, target_column].values
+            print(f"患者 {patient_id} 目标分布: {np.unique(patient_targets, return_counts=True)}")
+        else:
+            print(f"警告：患者 {patient_id} 在sepsis_labels中找不到目标列 {target_column}，使用全零目标")
+            patient_targets = np.zeros(len(patient_times))
+        
+        # 截断序列长度
+        seq_len = min(len(patient_times), max_seq_len, len(patient_vitals))
+        if seq_len > 0:
+            # 填充数据
+            reshaped_vitals[i, :seq_len] = patient_vitals[:seq_len]
+            reshaped_labs[i, :seq_len] = patient_labs[:seq_len]
+            reshaped_drugs[i, :seq_len] = patient_drugs[:seq_len]
+            reshaped_text_embeds[i, :seq_len] = patient_text_embeds[:seq_len]
+            reshaped_time_indices[i, :seq_len] = np.arange(1, seq_len+1)  # 时间索引从1开始
+            reshaped_targets[i, :seq_len] = patient_targets[:seq_len]
+    
+    return reshaped_vitals, reshaped_labs, reshaped_drugs, reshaped_text_embeds, kg_embeddings, reshaped_time_indices, reshaped_targets, patient_ids
 
 if __name__ == "__main__":
     train_and_evaluate_model()

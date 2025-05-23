@@ -82,8 +82,11 @@ python scripts/fixed_extract_sepsis_data.py
 处理提取的数据，创建用于模型训练的数据集：
 
 ```bash
-# 处理较小样本（1000名患者）
+# 处理3000名患者的数据
 python scripts/process_sepsis_data.py --sample_patients 3000
+
+# 如需处理较小样本或遇到内存问题，可以减少样本量
+python scripts/process_sepsis_data.py --sample_patients 1000
 ```
 
 ### 4. 转换数据格式
@@ -94,7 +97,31 @@ python scripts/process_sepsis_data.py --sample_patients 3000
 python scripts/convert_processed_data.py
 ```
 
-### 5. 运行完整系统
+### 5. 训练模型
+
+训练脓毒症预测模型：
+
+```bash
+python scripts/model_training.py
+```
+
+### 6. 生成预测结果
+
+使用训练好的模型生成预测结果：
+
+```bash
+python scripts/generate_predictions.py
+```
+
+### 7. 可视化分析
+
+生成可视化结果和解释性分析：
+
+```bash
+python utils/explanation.py
+```
+
+### 8. 运行完整系统
 
 运行完整的脓毒症早期预警系统（跳过已完成的数据提取步骤）：
 
@@ -107,6 +134,14 @@ python run_complete_sepsis_system.py --skip_extraction
 ```bash
 python run_complete_sepsis_system.py --only_viz
 ```
+
+### 9. 查看结果
+
+系统生成的结果可在 `results` 目录下查看：
+
+- `results/sepsis_prediction_results.html` - 交互式预测结果报告
+- `results/figures/` - 包含各类可视化图表
+- `results/evaluation_results.json` - 模型评估结果
 
 ## 系统输出
 
