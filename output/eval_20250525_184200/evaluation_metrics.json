@@ -1,0 +1,18 @@
+{
+  "auroc": 0.9645298281092013,
+  "auprc": 0.7046042585053319,
+  "accuracy": 0.9022556390977443,
+  "precision": 0.41714285714285715,
+  "recall": 0.9733333333333334,
+  "f1_score": 0.584,
+  "specificity": 0.8968655207280081,
+  "mean_early_warning_hours": 0.0,
+  "median_early_warning_hours": 0.0,
+  "false_alarm_rate": 0.006920415224913495,
+  "confusion_matrix": {
+    "tn": 887,
+    "fp": 102,
+    "fn": 2,
+    "tp": 73
+  }
+}

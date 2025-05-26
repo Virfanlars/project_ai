@@ -1,0 +1,32 @@
+2025-05-24 23:46:25 - __main__ - INFO - 启动数据插补工具，参数: {'data_dir': './data/processed', 'output_dir': './data/processed', 'method': 'forward_fill', 'strategy': 'mean', 'n_neighbors': 5, 'missing_threshold': 0.5, 'variance_threshold': 0.01, 'log_level': 'INFO'}
+2025-05-24 23:46:25 - __main__ - INFO - 加载数据...
+2025-05-24 23:46:25 - __main__ - INFO - 加载了患者数据: 3000行
+2025-05-24 23:46:25 - __main__ - INFO - 加载了生命体征数据: 1547行
+2025-05-24 23:46:25 - __main__ - INFO - 加载了实验室值数据: 1344行
+2025-05-24 23:46:25 - __main__ - INFO - 加载了时间序列数据: 2141行
+2025-05-24 23:46:25 - __main__ - INFO - 分析缺失值情况...
+2025-05-24 23:46:25 - __main__ - WARNING - patients数据中有8个特征的缺失率超过50%: hr, infection_hour, infection_time, sepsis3_onset_order, sofa_increase, sofa_baseline, sofa_score, sepsis_onset_time
+2025-05-24 23:46:25 - __main__ - WARNING - timeseries数据中有15个特征的缺失率超过50%: temperature, heart_rate, resp_rate, spo2, vasopressor, chloride, antibiotic, creatinine, sodium, wbc, lactate, bun, bilirubin_total, platelet, hours_to_sepsis
+2025-05-24 23:46:25 - __main__ - INFO - 执行forward_fill插补方法...
+2025-05-24 23:46:25 - __main__ - INFO - 处理patients数据...
+2025-05-24 23:46:25 - __main__ - INFO - 使用时间序列前向填充
+2025-05-24 23:46:25 - __main__ - INFO - 保存处理后的patients数据，行数: 3000，列数: 15
+2025-05-24 23:46:25 - __main__ - INFO - 处理vitals数据...
+2025-05-24 23:46:25 - __main__ - INFO - 使用时间序列前向填充
+2025-05-24 23:46:25 - __main__ - INFO - 保存处理后的vitals数据，行数: 1547，列数: 6
+2025-05-24 23:46:25 - __main__ - INFO - 处理labs数据...
+2025-05-24 23:46:25 - __main__ - INFO - 使用时间序列前向填充
+2025-05-24 23:46:25 - __main__ - INFO - 保存处理后的labs数据，行数: 1344，列数: 6
+2025-05-24 23:46:25 - __main__ - INFO - 处理timeseries数据...
+2025-05-24 23:46:25 - __main__ - INFO - 使用时间序列前向填充
+2025-05-24 23:46:25 - __main__ - INFO - 保存处理后的timeseries数据，行数: 2141，列数: 30
+2025-05-24 23:46:25 - __main__ - INFO - 分析插补效果...
+2025-05-24 23:46:25 - __main__ - INFO - patients数据插补前: 缺失值16000/45000 (35.56%)
+2025-05-24 23:46:25 - __main__ - INFO - patients数据插补后: 缺失值0/45000 (0.00%)
+2025-05-24 23:46:25 - __main__ - INFO - vitals数据插补前: 缺失值0/9282 (0.00%)
+2025-05-24 23:46:25 - __main__ - INFO - vitals数据插补后: 缺失值0/9282 (0.00%)
+2025-05-24 23:46:25 - __main__ - INFO - labs数据插补前: 缺失值0/8064 (0.00%)
+2025-05-24 23:46:25 - __main__ - INFO - labs数据插补后: 缺失值0/8064 (0.00%)
+2025-05-24 23:46:25 - __main__ - INFO - timeseries数据插补前: 缺失值29263/64230 (45.56%)
+2025-05-24 23:46:25 - __main__ - INFO - timeseries数据插补后: 缺失值60/64230 (0.09%)
+2025-05-24 23:46:25 - __main__ - INFO - 数据插补完成，结果保存在 ./data/processed\imputed_20250524_234625

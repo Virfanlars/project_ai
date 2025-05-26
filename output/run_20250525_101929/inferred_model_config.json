@@ -1,0 +1,11 @@
+{
+  "vitals_dim": 6,
+  "lab_dim": 6,
+  "drug_dim": 2,
+  "text_dim": 768,
+  "kg_dim": 128,
+  "hidden_dim": 256,
+  "num_heads": 1,
+  "num_layers": 4,
+  "dropout": 0.1
+}

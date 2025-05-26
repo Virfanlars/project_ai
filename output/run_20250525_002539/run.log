@@ -1,0 +1,500 @@
+2025-05-25 00:25:39 - __main__ - INFO - 启动脓毒症早期预警系统，参数: {'data_dir': './data/processed/imputed_20250524_234625', 'max_samples': 3000, 'hidden_dim': 128, 'num_heads': 4, 'num_layers': 2, 'dropout': 0.1, 'batch_size': 32, 'lr': 0.001, 'epochs': 50, 'patience': 10, 'kg_embedding_dim': 64, 'kg_method': 'TransE', 'imputation_method': None, 'imputation_strategy': 'mean', 'knn_neighbors': 5, 'missing_threshold': 0.5, 'seed': 42, 'device': 'cuda', 'output_dir': './output', 'log_level': 'INFO'}
+2025-05-25 00:25:39 - __main__ - INFO - 加载数据...
+2025-05-25 00:25:39 - src.data_processor.data_loader - INFO - 从./data/processed/imputed_20250524_234625加载数据...
+2025-05-25 00:25:39 - src.data_processor.data_loader - INFO - 找到患者数据文件: patients_imputed.csv
+2025-05-25 00:25:39 - src.data_processor.data_loader - INFO - 加载了患者数据: 3000行
+2025-05-25 00:25:39 - src.data_processor.data_loader - INFO - 找到生命体征数据文件: vitals_imputed.csv
+2025-05-25 00:25:39 - src.data_processor.data_loader - INFO - 加载了生命体征数据: 1547行
+2025-05-25 00:25:39 - src.data_processor.data_loader - INFO - 找到实验室值数据文件: labs_imputed.csv
+2025-05-25 00:25:39 - src.data_processor.data_loader - INFO - 加载了实验室值数据: 1344行
+2025-05-25 00:25:39 - src.data_processor.data_loader - INFO - 找到时间序列数据文件: timeseries_imputed.csv
+2025-05-25 00:25:39 - src.data_processor.data_loader - INFO - 加载了时间序列数据: 2141行
+2025-05-25 00:25:39 - src.data_processor.data_loader - INFO - 数据分割完成。训练集: 2100名患者, 验证集: 450名患者, 测试集: 450名患者
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:39 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - INFO - 创建了SimpleSepsisDataset，包含1398名患者，1398条序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - INFO - 创建了SimpleSepsisDataset，包含329名患者，329条序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - WARNING - 无法将列 timestamp 转换为浮点数，使用默认序列
+2025-05-25 00:25:40 - src.data_processor.data_loader - INFO - 创建了SimpleSepsisDataset，包含341名患者，341条序列
+2025-05-25 00:25:40 - __main__ - INFO - 构建知识图谱...
+2025-05-25 00:25:40 - src.knowledge_graph.kg_builder - INFO - 构建医学本体...
+2025-05-25 00:25:40 - src.knowledge_graph.kg_builder - INFO - 医学本体构建完成，包含30个实体，39个关系
+2025-05-25 00:25:40 - src.knowledge_graph.kg_builder - INFO - 医学本体构建完成，包含30个实体，39个关系
+2025-05-25 00:25:40 - src.knowledge_graph.kg_builder - INFO - 使用患者数据丰富知识图谱...
+2025-05-25 00:25:40 - src.knowledge_graph.kg_builder - INFO - 使用患者数据丰富知识图谱...
+2025-05-25 00:25:40 - src.knowledge_graph.kg_builder - INFO - 知识图谱丰富完成，现包含1428个实体，582个关系
+2025-05-25 00:25:40 - src.knowledge_graph.kg_builder - INFO - 计算患者相似性并添加到知识图谱...
+2025-05-25 00:26:33 - src.knowledge_graph.kg_builder - INFO - 添加了859个患者相似性关系
+2025-05-25 00:26:33 - src.knowledge_graph.kg_builder - INFO - 知识图谱已保存到 ./output\knowledge_graph.pkl
+2025-05-25 00:26:33 - src.knowledge_graph.kg_builder - INFO - 知识图谱已保存到 ./output\knowledge_graph.pkl
+2025-05-25 00:26:33 - __main__ - INFO - 生成知识图谱嵌入，使用 TransE 方法...
+2025-05-25 00:26:33 - src.knowledge_graph.kg_embedder - INFO - 训练TransE嵌入...
+2025-05-25 00:26:33 - src.knowledge_graph.kg_embedder - INFO - 使用TransE方法训练知识图谱嵌入
+2025-05-25 00:26:36 - src.knowledge_graph.kg_embedder - INFO - Epoch 1/30, Loss: 0.4902
+2025-05-25 00:26:36 - src.knowledge_graph.kg_embedder - INFO - Epoch 2/30, Loss: 0.4557
+2025-05-25 00:26:37 - src.knowledge_graph.kg_embedder - INFO - Epoch 3/30, Loss: 0.4252
+2025-05-25 00:26:37 - src.knowledge_graph.kg_embedder - INFO - Epoch 4/30, Loss: 0.3714
+2025-05-25 00:26:37 - src.knowledge_graph.kg_embedder - INFO - Epoch 5/30, Loss: 0.2965
+2025-05-25 00:26:37 - src.knowledge_graph.kg_embedder - INFO - Epoch 6/30, Loss: 0.2210
+2025-05-25 00:26:38 - src.knowledge_graph.kg_embedder - INFO - Epoch 7/30, Loss: 0.1483
+2025-05-25 00:26:38 - src.knowledge_graph.kg_embedder - INFO - Epoch 8/30, Loss: 0.0893
+2025-05-25 00:26:38 - src.knowledge_graph.kg_embedder - INFO - Epoch 9/30, Loss: 0.0611
+2025-05-25 00:26:39 - src.knowledge_graph.kg_embedder - INFO - Epoch 10/30, Loss: 0.0402
+2025-05-25 00:26:39 - src.knowledge_graph.kg_embedder - INFO - Epoch 11/30, Loss: 0.0269
+2025-05-25 00:26:39 - src.knowledge_graph.kg_embedder - INFO - Epoch 12/30, Loss: 0.0218
+2025-05-25 00:26:39 - src.knowledge_graph.kg_embedder - INFO - Epoch 13/30, Loss: 0.0169
+2025-05-25 00:26:40 - src.knowledge_graph.kg_embedder - INFO - Epoch 14/30, Loss: 0.0161
+2025-05-25 00:26:40 - src.knowledge_graph.kg_embedder - INFO - Epoch 15/30, Loss: 0.0155
+2025-05-25 00:26:40 - src.knowledge_graph.kg_embedder - INFO - Epoch 16/30, Loss: 0.0167
+2025-05-25 00:26:40 - src.knowledge_graph.kg_embedder - INFO - Epoch 17/30, Loss: 0.0133
+2025-05-25 00:26:41 - src.knowledge_graph.kg_embedder - INFO - Epoch 18/30, Loss: 0.0140
+2025-05-25 00:26:41 - src.knowledge_graph.kg_embedder - INFO - Epoch 19/30, Loss: 0.0150
+2025-05-25 00:26:41 - src.knowledge_graph.kg_embedder - INFO - Epoch 20/30, Loss: 0.0188
+2025-05-25 00:26:41 - src.knowledge_graph.kg_embedder - INFO - Epoch 21/30, Loss: 0.0133
+2025-05-25 00:26:41 - src.knowledge_graph.kg_embedder - INFO - Epoch 22/30, Loss: 0.0106
+2025-05-25 00:26:42 - src.knowledge_graph.kg_embedder - INFO - Epoch 23/30, Loss: 0.0104
+2025-05-25 00:26:42 - src.knowledge_graph.kg_embedder - INFO - Epoch 24/30, Loss: 0.0130
+2025-05-25 00:26:42 - src.knowledge_graph.kg_embedder - INFO - Epoch 25/30, Loss: 0.0151
+2025-05-25 00:26:42 - src.knowledge_graph.kg_embedder - INFO - Epoch 26/30, Loss: 0.0130
+2025-05-25 00:26:43 - src.knowledge_graph.kg_embedder - INFO - Epoch 27/30, Loss: 0.0120
+2025-05-25 00:26:43 - src.knowledge_graph.kg_embedder - INFO - Epoch 28/30, Loss: 0.0115
+2025-05-25 00:26:43 - src.knowledge_graph.kg_embedder - INFO - Epoch 29/30, Loss: 0.0128
+2025-05-25 00:26:43 - src.knowledge_graph.kg_embedder - INFO - Epoch 30/30, Loss: 0.0128
+2025-05-25 00:26:43 - src.knowledge_graph.kg_embedder - INFO - TransE嵌入已保存至 ./output\run_20250525_002539\TransE_embeddings.pkl
+2025-05-25 00:26:43 - __main__ - INFO - 创建多模态Transformer模型...
+2025-05-25 00:26:43 - __main__ - INFO - 验证模型正确性...
+2025-05-25 00:26:47 - __main__ - INFO - 模型前向传播测试成功，输出形状: torch.Size([2, 21])
+2025-05-25 00:26:47 - __main__ - INFO - 开始训练模型...
+2025-05-25 00:26:47 - src.training.trainer - INFO - 开始训练，共50个epoch
+2025-05-25 00:26:47 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:47 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 13 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:47 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 14 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:47 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 15 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:47 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 16 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 17 的所有位置都被掩码，设置第一个时间点为有效
+2025-05-25 00:26:47 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 17 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:47 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 18 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:47 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 19 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:47 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 20 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:47 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 21 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:47 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 22 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:47 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 23 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:47 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 24 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:47 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 25 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:47 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 26 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 27 的所有位置都被掩码，设置第一个时间点为有效
+2025-05-25 00:26:47 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 27 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:47 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 28 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:47 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 29 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 30 的所有位置都被掩码，设置第一个时间点为有效
+2025-05-25 00:26:47 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 30 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:47 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 31 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:47 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 32 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 33 的所有位置都被掩码，设置第一个时间点为有效
+2025-05-25 00:26:47 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 33 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:47 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:47 - src.training.trainer - WARNING - 批次 34 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 35 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 36 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 37 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 38 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 39 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 40 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 41 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 42 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 43 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 验证批次 0 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 验证批次 1 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 验证批次 2 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 验证批次 3 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 验证批次 4 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 验证批次 5 的所有位置都被掩码，设置第一个时间点为有效
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 验证批次 5 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 验证批次 6 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 验证批次 7 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 验证批次 8 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 验证批次 9 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 验证批次 10 的所有位置都被掩码，设置第一个时间点为有效
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 验证批次 10 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.training.trainer - INFO - Epoch 1/50 - Time: 1.48s - Train Loss: 1.2680 - Val Loss: 5.8962 - Train AUROC: 0.6269 - Val AUROC: 0.5000
+2025-05-25 00:26:48 - src.training.trainer - INFO - Validation loss decreased (inf --> 5.896180). Saving model...
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 0 的所有位置都被掩码，设置第一个时间点为有效
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 0 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 1 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 2 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 3 的所有位置都被掩码，设置第一个时间点为有效
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 3 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 4 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 5 的所有位置都被掩码，设置第一个时间点为有效
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 5 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 6 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 7 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 8 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 9 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 10 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 11 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 12 的所有位置都被掩码，设置第一个时间点为有效
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 12 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 13 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:48 - src.training.trainer - WARNING - 批次 14 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:48 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 15 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 16 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 17 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 18 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 19 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 20 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 21 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 22 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 23 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 24 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 25 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 26 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 27 的所有位置都被掩码，设置第一个时间点为有效
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 27 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 28 的所有位置都被掩码，设置第一个时间点为有效
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 28 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 29 的所有位置都被掩码，设置第一个时间点为有效
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 29 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 30 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 31 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 32 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 33 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 34 的所有位置都被掩码，设置第一个时间点为有效
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 34 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 35 的所有位置都被掩码，设置第一个时间点为有效
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 35 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 36 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 37 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 38 的所有位置都被掩码，设置第一个时间点为有效
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 38 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 39 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 40 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 41 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 42 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 批次 43 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:49 - src.training.trainer - WARNING - 验证批次 0 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:49 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 验证批次 1 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 验证批次 2 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 验证批次 3 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 验证批次 4 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 验证批次 5 的所有位置都被掩码，设置第一个时间点为有效
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 验证批次 5 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 验证批次 6 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 验证批次 7 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 验证批次 8 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 验证批次 9 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 验证批次 10 的所有位置都被掩码，设置第一个时间点为有效
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 验证批次 10 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.training.trainer - INFO - Epoch 2/50 - Time: 1.59s - Train Loss: 1.8025 - Val Loss: 5.8962 - Train AUROC: 0.5000 - Val AUROC: 0.5000
+2025-05-25 00:26:50 - src.training.trainer - INFO - Validation loss decreased (5.896180 --> 5.896180). Saving model...
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 0 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 1 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 2 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 3 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 4 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 5 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 6 的所有位置都被掩码，设置第一个时间点为有效
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 6 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 7 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 8 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 9 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 10 的所有位置都被掩码，设置第一个时间点为有效
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 10 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 11 的所有位置都被掩码，设置第一个时间点为有效
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 11 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 12 的所有位置都被掩码，设置第一个时间点为有效
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 12 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 13 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 14 的所有位置都被掩码，设置第一个时间点为有效
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 14 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 15 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 16 的所有位置都被掩码，设置第一个时间点为有效
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 16 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 17 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 18 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 19 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 20 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 21 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 22 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 23 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 24 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 25 包含NaN或Inf输出值，已替换
+2025-05-25 00:26:50 - src.models.multimodal_transformer - ERROR - 编码特征包含NaN或Inf值
+2025-05-25 00:26:50 - src.training.trainer - WARNING - 批次 26 包含NaN或Inf输出值，已替换

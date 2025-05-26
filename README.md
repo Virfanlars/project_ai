@@ -1,198 +1,170 @@
-# 基于MIMIC-IV数据的脓毒症早期预警系统
+# 基于多模态时序数据与知识图谱增强的脓毒症早期预警系统
 
 ## 项目概述
 
-本项目实现了一个基于MIMIC-IV数据库的脓毒症早期预警系统，通过分析患者的多源时序数据，预测脓毒症发生风险，并提供可解释的预警结果。系统利用真实的ICU数据，构建了完整的数据处理、模型训练和结果可视化流程。
+脓毒症是一种危及生命的严重感染并发症，如果能够提前预测，将大大提高治疗效果和患者生存率。本项目实现了一个基于人工智能的脓毒症早期预警系统，利用MIMIC-IV临床数据库中的真实患者数据，通过多模态深度学习方法预测患者发生脓毒症的风险。
 
 ### 核心功能
 
-1. **多维数据整合**：处理MIMIC-IV数据库中的生命体征、实验室检查、药物使用等多维时序数据
-2. **脓毒症预测**：基于Sepsis-3标准构建脓毒症早期预警模型
-3. **风险评估**：动态计算患者发展为脓毒症的风险概率
-4. **可视化分析**：提供ROC曲线、风险轨迹等多种直观的可视化结果
+- **多模态数据融合**：整合生命体征、实验室检测值、药物使用记录和知识图谱信息
+- **动态风险预测**：基于时序Transformer模型，为患者提供实时的脓毒症风险评分
+- **知识图谱增强**：利用医学知识图谱增强临床数据，提高预测准确性
+- **可视化风险轨迹**：生成患者风险随时间变化的轨迹图，辅助临床决策
+- **特征重要性分析**：识别对预测结果影响最大的临床指标
+- **高级数据插补**：支持多种插补方法处理缺失值，提高数据质量
 
-### 技术架构
+## 安装指南
 
-- **数据处理层**：PostgreSQL数据库连接、SQL查询优化、时序数据处理
-- **模型层**：多模态Transformer模型，整合生命体征、实验室检测等多源数据
-- **预测层**：动态风险评估、特征重要性分析
-- **可视化层**：交互式HTML报告、图表展示
+### 环境要求
 
-## 环境要求
+- Python 3.8+
+- CUDA 11.0+ (用于GPU加速，可选)
 
-- Python 3.9+
-- PostgreSQL 12+
-- MIMIC-IV数据库
-- 至少8GB RAM
-- 至少20GB磁盘空间
-- CUDA支持（推荐，但非必需）
+### 安装步骤
 
-## 快速安装
+1. 克隆仓库
 
 ```bash
-# 创建虚拟环境
-python -m venv sepsis_env
+git clone https://github.com/yourusername/sepsis-early-warning.git
+cd sepsis-early-warning
+```
 
-# 激活环境
-# Windows:
-sepsis_env\Scripts\activate
-# Linux/Mac:
-source sepsis_env/bin/activate
+2. 创建虚拟环境（可选）
 
-# 安装依赖
+```bash
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# 或
+venv\Scripts\activate  # Windows
+```
+
+3. 安装依赖
+
+```bash
 pip install -r requirements.txt
 ```
 
-## 数据库配置
+## 使用方法
 
-系统需要访问MIMIC-IV数据库。需要设置以下环境变量以配置数据库连接：
+### 数据准备
 
-```bash
-# Windows PowerShell
-$env:MIMIC_DB_HOST = "172.16.3.67"
-$env:MIMIC_DB_PORT = "5432"
-$env:MIMIC_DB_NAME = "mimiciv"
-$env:MIMIC_DB_USER = "postgres"
-$env:MIMIC_DB_PASSWORD = "123456"
+1. 获取MIMIC-IV数据库访问权限（需通过PhysioNet的访问申请）
+2. 处理后的数据存放在`data/processed/`目录下，包括：
+   - 患者基本信息 (`all_patients.csv`)
+   - 生命体征数据 (`vital_signs_interim_5.csv`)
+   - 实验室检测值 (`lab_values.csv`)
+   - 时间序列数据 (`time_series.csv`)
 
-# 或者使用提供的脚本
-.\set_mimic_env.ps1
-```
+### 数据处理与插补
 
-## 执行流程
+处理缺失数据是临床分析的关键步骤。本项目提供多种插补方法：
 
-### 1. 测试数据库连接
-
-首先测试数据库连接是否正常：
+1. 使用简单插补（均值、中位数、众数填充）
 
 ```bash
-python scripts/test_db_connection.py
+python src/data_processor/run_imputation.py --method simple --strategy mean
 ```
 
-### 2. 提取数据
-
-从MIMIC-IV数据库中提取脓毒症相关数据：
+2. 使用K近邻（KNN）插补
 
 ```bash
-python scripts/fixed_extract_sepsis_data.py
+python src/data_processor/run_imputation.py --method knn --n_neighbors 5
 ```
 
-### 3. 处理数据
-
-处理提取的数据，创建用于模型训练的数据集：
+3. 使用多重插补链方程（MICE）
 
 ```bash
-# 处理3000名患者的数据
-python scripts/process_sepsis_data.py --sample_patients 3000
-
-# 如需处理较小样本或遇到内存问题，可以减少样本量
-python scripts/process_sepsis_data.py --sample_patients 1000
+python src/data_processor/run_imputation.py --method mice
 ```
 
-### 4. 转换数据格式
-
-将处理后的数据转换为模型所需的格式：
+4. 使用时间序列前向填充
 
 ```bash
-python scripts/convert_processed_data.py
+python src/data_processor/run_imputation.py --method forward_fill
 ```
 
-### 5. 训练模型
-
-训练脓毒症预测模型：
+5. 特征选择（移除高缺失率特征）
 
 ```bash
-python scripts/model_training.py
+python src/data_processor/run_imputation.py --method feature_selection --missing_threshold 0.5
 ```
 
-### 6. 生成预测结果
+### 插补方法选择指南
 
-使用训练好的模型生成预测结果：
+不同类型的数据适合不同的插补方法：
+
+- **生命体征数据**：时间连续性强，建议使用前向填充(`forward_fill`)
+- **实验室检测结果**：间隔较大，建议使用KNN或MICE插补
+- **高缺失率特征**：当缺失率超过50%，建议通过特征选择移除
+- **混合策略**：可以在主程序中使用前向填充，对时间序列数据进行实时处理
+
+### 运行系统
+
+1. 训练模型
 
 ```bash
-python scripts/generate_predictions.py
+python src/main.py --data_dir ./data/processed --output_dir ./output
 ```
 
-### 7. 可视化分析
+2. 查看结果
 
-生成可视化结果和解释性分析：
+训练完成后，可以在`output/run_YYYYMMDD_HHMMSS/`目录下查看结果：
+- `sepsis_prediction_results.html`：评估报告
+- `figures/`：包含ROC曲线、混淆矩阵、风险轨迹图和特征重要性图
+
+### 配置参数
+
+可以通过命令行参数调整系统配置：
 
 ```bash
-python utils/explanation.py
+python src/main.py --data_dir ./data/processed --max_samples 3000 --hidden_dim 128 --num_heads 4 --batch_size 32 --epochs 50 --imputation_method forward_fill
 ```
 
-### 8. 运行完整系统
+主要参数说明：
+- `--data_dir`：数据目录路径
+- `--max_samples`：最大样本数量
+- `--hidden_dim`：模型隐藏层维度
+- `--num_heads`：Transformer注意力头数量
+- `--num_layers`：Transformer编码器层数
+- `--batch_size`：批处理大小
+- `--epochs`：训练轮数
+- `--kg_method`：知识图谱嵌入方法（TransE/DistMult/ComplEx）
+- `--imputation_method`：缺失值插补方法（simple/knn/mice/forward_fill）
 
-运行完整的脓毒症早期预警系统（跳过已完成的数据提取步骤）：
+## 系统架构
 
-```bash
-python run_complete_sepsis_system.py --skip_extraction
-```
+### 模块结构
 
-或者只运行可视化部分：
+- **数据处理模块** (`src/data_processor/`)：处理和预处理多模态医疗数据
+  - `data_loader.py`：加载和分割数据
+  - `data_imputer.py`：实现多种缺失值插补方法
+  - `run_imputation.py`：独立运行的插补脚本
+- **知识图谱模块** (`src/knowledge_graph/`)：构建医学知识图谱和生成实体嵌入
+- **模型模块** (`src/models/`)：定义多模态Transformer模型
+- **训练模块** (`src/training/`)：实现模型训练循环和早停机制
+- **评估模块** (`src/evaluation/`)：评估模型性能和生成评估指标
+- **可视化模块** (`src/visualization/`)：生成ROC曲线、混淆矩阵、风险轨迹图等
 
-```bash
-python run_complete_sepsis_system.py --only_viz
-```
+### 技术细节
 
-### 9. 查看结果
+- **多模态融合**：通过特征投影层将不同类型数据映射到统一维度空间
+- **时间感知**：使用位置编码和时间嵌入层捕捉时序信息
+- **知识图谱嵌入**：采用TransE方法将医学概念映射到低维稠密向量
+- **动态预测**：基于Transformer架构实现对长序列时序数据的建模
+- **可解释性分析**：通过特征重要性和注意力权重分析提供模型解释
+- **高级数据插补**：提供多种插补算法处理临床数据中的缺失值
 
-系统生成的结果可在 `results` 目录下查看：
+## 引用
 
-- `results/sepsis_prediction_results.html` - 交互式预测结果报告
-- `results/figures/` - 包含各类可视化图表
-- `results/evaluation_results.json` - 模型评估结果
+如果您在研究中使用了本系统，请引用以下文献：
 
-## 系统输出
+- Sepsis-3共识：Singer M, et al. The Third International Consensus Definitions for Sepsis and Septic Shock (Sepsis-3). JAMA. 2016;315(8):801-810.
+- MIMIC-IV数据库：Johnson AEW, et al. MIMIC-IV, a freely accessible electronic health record dataset. Scientific Data. 2023.
 
-系统将生成以下输出结果：
+## 联系方式
 
-- `results/sepsis_prediction_results.html` - 交互式预测结果报告
-- `results/figures/roc_curve.png` - ROC曲线图
-- `results/figures/confusion_matrix.png` - 混淆矩阵
-- `results/figures/risk_trajectories.png` - 风险轨迹图
-- `results/evaluation_results.json` - 包含精确度、召回率、F1分数等指标的评估结果
+如有问题或建议，请联系：
 
-## 项目结构
-
-```
-├── data/                 # 数据目录
-│   ├── processed/        # 处理后的数据
-│   └── knowledge_graph/  # 知识图谱数据
-├── models/               # 模型目录
-├── scripts/              # 脚本目录
-│   ├── fixed_extract_sepsis_data.py  # 数据提取
-│   ├── process_sepsis_data.py        # 数据处理
-│   ├── convert_processed_data.py     # 数据格式转换
-│   ├── test_db_connection.py         # 数据库连接测试
-│   └── model_training.py             # 模型训练
-├── utils/                # 工具函数
-│   ├── database_config.py     # 数据库配置
-│   ├── data_loading.py        # 数据加载
-│   ├── evaluation.py          # 评估指标
-│   └── explanation.py         # 特征解释
-├── results/              # 结果输出目录
-├── config.py             # 配置文件
-├── run_complete_sepsis_system.py  # 完整系统执行脚本
-└── README.md             # 项目说明
-```
-
-## 故障排除
-
-1. **数据库连接问题**：
-   - 确保PostgreSQL服务正在运行
-   - 验证数据库连接参数是否正确
-   - 使用`scripts/test_db_connection.py`测试连接
-
-2. **编码问题**：
-   - 如果遇到UTF-8编码错误，请使用文本编辑器打开文件，另存为UTF-8格式（不带BOM）
-   - 对于Windows用户，可能需要处理文件中的null字节
-
-3. **内存问题**：
-   - 如果遇到内存错误，尝试减少处理的患者数量：`--sample_patients 500`
-   - 关闭其他内存密集型应用程序
-
-## 参考资料
-
-- MIMIC-IV数据集: https://physionet.org/content/mimiciv/
-- Sepsis-3定义: Singer et al., "The Third International Consensus Definitions for Sepsis and Septic Shock (Sepsis-3)," JAMA 2016 
+- 项目维护者：您的姓名
+- 电子邮件：your.email@example.com
+- GitHub Issues：https://github.com/yourusername/sepsis-early-warning/issues 

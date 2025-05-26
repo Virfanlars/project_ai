@@ -1,0 +1,12 @@
+2025-05-25 00:56:03 - __main__ - INFO - 启动脓毒症早期预警系统，参数: {'data_dir': '../data', 'max_samples': 3000, 'hidden_dim': 128, 'num_heads': 4, 'num_layers': 2, 'dropout': 0.1, 'batch_size': 16, 'lr': 0.0005, 'epochs': 5, 'patience': 10, 'kg_embedding_dim': 64, 'kg_method': 'TransE', 'imputation_method': None, 'imputation_strategy': 'mean', 'knn_neighbors': 5, 'missing_threshold': 0.5, 'seed': 42, 'device': 'cuda', 'output_dir': './output', 'log_level': 'INFO'}
+2025-05-25 00:56:03 - __main__ - INFO - 加载数据...
+2025-05-25 00:56:03 - src.data_processor.data_loader - INFO - 从../data加载数据...
+2025-05-25 00:56:03 - __main__ - ERROR - 数据加载失败: 在../data中未找到患者数据文件
+2025-05-25 00:56:03 - root - ERROR - 系统运行出错: 在../data中未找到患者数据文件
+Traceback (most recent call last):
+  File "D:\Documents\Downloads\ai\project\src\main.py", line 133, in main
+    data_loaders, feature_dims = load_data(args.data_dir, args.batch_size, args.max_samples)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Documents\Downloads\ai\project\src\data_processor\data_loader.py", line 457, in load_data
+    raise FileNotFoundError(f"在{data_dir}中未找到患者数据文件")
+FileNotFoundError: 在../data中未找到患者数据文件
