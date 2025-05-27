@@ -1170,66 +1170,64 @@ def load_data(data_dir, batch_size=32, max_samples=None):
     id_col = primary_id_col
     logger.info(f"最终选定的ID列: {id_col}")
     
-    # 如果有时间序列数据，直接使用它创建数据集
-    if not timeseries_data.empty:
-        logger.info("使用时间序列数据创建数据集")
-    
     # 分割数据集
     train_ratio, val_ratio, test_ratio = 0.7, 0.15, 0.15
     
-        # 首先随机打乱数据 - 确保按照患者ID分组
-        if id_col and id_col in patient_data.columns:
-            # 获取唯一患者ID
-            unique_patients = patient_data[id_col].unique()
-            np.random.seed(42)
-            np.random.shuffle(unique_patients)
+    # 首先随机打乱数据 - 确保按照患者ID分组
+    if id_col and id_col in patient_data.columns:
+        # 获取唯一患者ID
+        unique_patients = patient_data[id_col].unique()
+        np.random.seed(42)
+        np.random.shuffle(unique_patients)
             
-            # 计算分割点
-            n_patients = len(unique_patients)
-            train_end = int(n_patients * train_ratio)
-            val_end = train_end + int(n_patients * val_ratio)
+        # 计算分割点
+        n_patients = len(unique_patients)
+        train_end = int(n_patients * train_ratio)
+        val_end = train_end + int(n_patients * val_ratio)
             
-            # 分割患者ID
-            train_patient_ids = unique_patients[:train_end]
-            val_patient_ids = unique_patients[train_end:val_end]
-            test_patient_ids = unique_patients[val_end:]
+        # 分割患者ID
+        train_patient_ids = unique_patients[:train_end]
+        val_patient_ids = unique_patients[train_end:val_end]
+        test_patient_ids = unique_patients[val_end:]
             
-            # 基于ID分割患者数据
-            train_patients = patient_data[patient_data[id_col].isin(train_patient_ids)]
-            val_patients = patient_data[patient_data[id_col].isin(val_patient_ids)]
-            test_patients = patient_data[patient_data[id_col].isin(test_patient_ids)]
+        # 基于ID分割患者数据
+        train_patients = patient_data[patient_data[id_col].isin(train_patient_ids)]
+        val_patients = patient_data[patient_data[id_col].isin(val_patient_ids)]
+        test_patients = patient_data[patient_data[id_col].isin(test_patient_ids)]
             
-            logger.info(f"数据分割完成。训练集: {len(train_patient_ids)}名患者, "
-                      f"验证集: {len(val_patient_ids)}名患者, "
-                      f"测试集: {len(test_patient_ids)}名患者")
-        else:
-            # 如果没有ID列，直接分割数据
-            patient_data = patient_data.sample(frac=1, random_state=42).reset_index(drop=True)
+        logger.info(f"数据分割完成。训练集: {len(train_patient_ids)}名患者, "
+            f"验证集: {len(val_patient_ids)}名患者, "
+            f"测试集: {len(test_patient_ids)}名患者")
+    else:
+        # 如果没有ID列，直接分割数据
+        patient_data = patient_data.sample(frac=1, random_state=42).reset_index(drop=True)
     
-    # 计算分割点
-    n_samples = len(patient_data)
-    train_end = int(n_samples * train_ratio)
-    val_end = train_end + int(n_samples * val_ratio)
+        # 计算分割点
+        n_samples = len(patient_data)
+        train_end = int(n_samples * train_ratio)
+        val_end = train_end + int(n_samples * val_ratio)
+      
+        # 分割患者数据
+        train_patients = patient_data.iloc[:train_end]
+        val_patients = patient_data.iloc[train_end:val_end]
+        test_patients = patient_data.iloc[val_end:]
     
-    # 分割患者数据
-    train_patients = patient_data.iloc[:train_end]
-    val_patients = patient_data.iloc[train_end:val_end]
-    test_patients = patient_data.iloc[val_end:]
-    
-    logger.info(f"数据分割完成。训练集: {len(train_patients)}名患者, "
+        logger.info(f"数据分割完成。训练集: {len(train_patients)}名患者, "
                f"验证集: {len(val_patients)}名患者, "
                f"测试集: {len(test_patients)}名患者")
     
-        # 创建数据集，明确传递ID列名
-    train_dataset = SimpleSepsisDataset(train_patients, id_col=id_col, timeseries_data=timeseries_data)
-    val_dataset = SimpleSepsisDataset(val_patients, id_col=id_col, timeseries_data=timeseries_data)
-    test_dataset = SimpleSepsisDataset(test_patients, id_col=id_col, timeseries_data=timeseries_data)
+    # 创建数据集
+    if not timeseries_data.empty:
+        logger.info("使用时间序列数据创建数据集")
+        # 明确传递ID列名
+        train_dataset = SimpleSepsisDataset(train_patients, id_col=id_col, timeseries_data=timeseries_data)
+        val_dataset = SimpleSepsisDataset(val_patients, id_col=id_col, timeseries_data=timeseries_data)
+        test_dataset = SimpleSepsisDataset(test_patients, id_col=id_col, timeseries_data=timeseries_data)
     else:
-        # 如果没有时间序列数据，使用分开的生命体征和实验室数据
-        # 此部分代码保持不变...
-    train_dataset = SimpleSepsisDataset(train_patients, vitals_data, labs_data, timeseries_data)
-    val_dataset = SimpleSepsisDataset(val_patients, vitals_data, labs_data, timeseries_data)
-    test_dataset = SimpleSepsisDataset(test_patients, vitals_data, labs_data, timeseries_data)
+        # 使用分离的数据
+        train_dataset = SimpleSepsisDataset(train_patients, vitals_data, labs_data, None, id_col)
+        val_dataset = SimpleSepsisDataset(val_patients, vitals_data, labs_data, None, id_col)
+        test_dataset = SimpleSepsisDataset(test_patients, vitals_data, labs_data, None, id_col)
     
     # 创建数据加载器
     train_loader = DataLoader(

@@ -30,7 +30,7 @@ def plot_roc_curve(metrics, output_dir):
         metrics: 评估指标字典
         output_dir: 输出目录
     """
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(10, 8))
     
     # 如果metrics是列表，将其转换为字典
     if isinstance(metrics, list):
@@ -44,28 +44,49 @@ def plot_roc_curve(metrics, output_dir):
         }
         metrics = metrics_dict
     
-    # 获取FPR和TPR用于绘制ROC曲线
+    # 获取FPR、TPR和阈值用于绘制ROC曲线
     fpr = metrics.get('fpr', [0, 1])
     tpr = metrics.get('tpr', [0, 1])
+    thresholds = metrics.get('thresholds', [1, 0])
     auroc = metrics.get('auroc', 0.5)
+    optimal_threshold = metrics.get('optimal_threshold', 0.5)
     
-    # 绘制ROC曲线
-    plt.plot(fpr, tpr, label=f'AUROC = {auroc:.4f}', color='blue', linewidth=2)
-    plt.plot([0, 1], [0, 1], 'k--', label='随机猜测 (AUROC = 0.5)')
+    # 为了绘制最优阈值点，找到最接近optimal_threshold的索引
+    if len(thresholds) > 2:
+        threshold_diffs = np.abs(np.array(thresholds) - optimal_threshold)
+        optimal_idx = np.argmin(threshold_diffs)
+        optimal_fpr = fpr[optimal_idx]
+        optimal_tpr = tpr[optimal_idx]
+    else:
+        # 如果阈值列表太短，使用默认点
+        optimal_fpr, optimal_tpr = 0.3, 0.7
+    
+    # 绘制ROC曲线 (使用全宽空间)
+    plt.plot(fpr, tpr, label=f'ROC Curve (AUC = {auroc:.3f})', color='blue', linewidth=2)
+    plt.plot([0, 1], [0, 1], 'k--', label='Random Guess')
+    
+    # 标记最优阈值点
+    plt.scatter([optimal_fpr], [optimal_tpr], color='red', s=100, zorder=3, 
+              label=f'Optimal Threshold = {optimal_threshold:.3f}')
+    
+    # 从最优点画虚线到坐标轴
+    plt.plot([optimal_fpr, optimal_fpr], [0, optimal_tpr], 'r--', alpha=0.5)
+    plt.plot([0, optimal_fpr], [optimal_tpr, optimal_tpr], 'r--', alpha=0.5)
     
     # 设置图表
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
-    plt.xlabel('假阳性率 (1 - 特异性)')
-    plt.ylabel('真阳性率 (敏感性)')
-    plt.title('ROC曲线')
+    plt.xlabel('False Positive Rate (FPR)')
+    plt.ylabel('True Positive Rate (TPR)')
+    plt.title('Receiver Operating Characteristic (ROC) Curve')
     plt.legend(loc="lower right")
     
     # 保存图表
     figure_dir = os.path.join(output_dir, 'figures')
     os.makedirs(figure_dir, exist_ok=True)
-    plt.savefig(os.path.join(figure_dir, 'roc_curve.png'))
+    plt.savefig(os.path.join(figure_dir, 'roc_curve.png'), dpi=300, bbox_inches='tight')
     plt.close()
+    logger.info(f"ROC曲线已保存至 {os.path.join(figure_dir, 'roc_curve.png')}")
 
 
 def plot_confusion_matrix(metrics, output_dir):
@@ -84,44 +105,73 @@ def plot_confusion_matrix(metrics, output_dir):
     cm_data = metrics['confusion_matrix']
     cm = np.array([[cm_data['tn'], cm_data['fp']], [cm_data['fn'], cm_data['tp']]])
     
-    # 创建图像
-    plt.figure(figsize=(8, 6))
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=False,
+    # 计算总数和类别比例
+    total = cm.sum()
+    neg_class_total = cm[0].sum()  # 非脓毒症样本总数
+    pos_class_total = cm[1].sum()  # 脓毒症样本总数
+    class_ratio = neg_class_total / pos_class_total if pos_class_total > 0 else 0
+    
+    # 按行归一化的矩阵 - 显示每个真实类别的预测分布
+    cm_row_norm = np.zeros_like(cm, dtype=float)
+    for i in range(cm.shape[0]):
+        row_sum = cm[i].sum()
+        if row_sum > 0:
+            cm_row_norm[i] = cm[i] / row_sum * 100
+    
+    # 创建图像 - 只保留一张混淆矩阵图
+    plt.figure(figsize=(10, 8))
+    
+    # 绘制按行归一化的矩阵（每个真实类别的预测分布）
+    ax = plt.gca()
+    sns.heatmap(cm_row_norm, annot=True, fmt='.1f', cmap='Blues', cbar=False,
                 xticklabels=['No Sepsis', 'Sepsis'],
                 yticklabels=['No Sepsis', 'Sepsis'])
     plt.xlabel('Predicted Label')
     plt.ylabel('True Label')
-    plt.title('Confusion Matrix')
     
-    # 计算准确率和其他指标
-    accuracy = (cm_data['tp'] + cm_data['tn']) / sum(cm_data.values())
-    plt.figtext(0.5, 0.01, f"Accuracy: {accuracy:.3f} | Precision: {metrics['precision']:.3f} | Recall: {metrics['recall']:.3f} | F1: {metrics['f1_score']:.3f}", 
+    # 添加指标信息到标题
+    threshold = metrics.get('optimal_threshold', 0.5)
+    plt.title(f'Confusion Matrix - Per Class Distribution (%) (Threshold = {threshold:.4f})\n'
+              f'Accuracy: {metrics["accuracy"]:.3f} | Precision: {metrics["precision"]:.3f} | '
+              f'Recall: {metrics["recall"]:.3f} | F1: {metrics["f1_score"]:.3f}', 
+              fontsize=12)
+    
+    # 添加文本注释
+    plt.figtext(0.5, 0.01, 
+                f"Class Imbalance: {class_ratio:.1f}:1 (No Sepsis:Sepsis) | "
+                f"Specificity: {metrics['specificity']:.3f} | "
+                f"AUROC: {metrics['auroc']:.3f}", 
                 ha='center', fontsize=10)
     
-    # 添加时间戳到文件名，确保每次生成唯一的图像文件
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_file = os.path.join(output_dir, 'figures', f'confusion_matrix_{timestamp}.png')
-    
-    # 保存主要文件名(无时间戳)，用于HTML报告引用
-    main_output_file = os.path.join(output_dir, 'figures', 'confusion_matrix.png')
+    # 调整布局
+    plt.tight_layout()
+    plt.subplots_adjust(bottom=0.07)  # 为底部文本留出空间
     
     # 确保目录存在
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    figure_dir = os.path.join(output_dir, 'figures')
+    os.makedirs(figure_dir, exist_ok=True)
     
-    # 保存带时间戳的图像
+    # 保存混淆矩阵图
+    output_file = os.path.join(figure_dir, 'confusion_matrix.png')
     plt.savefig(output_file, dpi=300, bbox_inches='tight')
-    
-    # 同时也保存标准文件名的图像，用于报告引用
-    plt.savefig(main_output_file, dpi=300, bbox_inches='tight')
-    
-    plt.close()
+    # 记录图像保存信息
+    logger.info(f"混淆矩阵已保存至 {output_file}")
+    logger.info(f"混淆矩阵数据: TN={cm_data['tn']}, FP={cm_data['fp']}, FN={cm_data['fn']}, TP={cm_data['tp']}")
     
     # 记录图像保存信息，包括混淆矩阵具体数值，方便调试
     logger.info(f"混淆矩阵已保存至 {output_file}")
     logger.info(f"混淆矩阵数据: TN={cm_data['tn']}, FP={cm_data['fp']}, FN={cm_data['fn']}, TP={cm_data['tp']}")
 
 
-def plot_risk_trajectories(output_dir, n_patients=5):
+def plot_risk_trajectories(output_dir, n_patients=5, max_trajectories=5):
+    """
+    绘制患者风险轨迹图
+    
+    Args:
+        output_dir: 输出目录
+        n_patients: 要绘制的患者数量
+        max_trajectories: 最大显示的轨迹数量，防止图表过于拥挤
+    """
     """
     绘制患者风险轨迹图
     
@@ -268,22 +318,42 @@ def plot_risk_trajectories(output_dir, n_patients=5):
     plt.legend()
     plt.grid(True, alpha=0.3)
     
-    # 添加时间戳到文件名
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    timestamped_path = os.path.join(output_dir, f'risk_trajectories_{timestamp}.png')
+    # 只保留最大显示轨迹数量，防止图表过于拥挤
+    if len(plt.gca().get_lines()) > max_trajectories * 2:  # 因为每个患者有两条线
+        # 保留前max_trajectories个患者的线条
+        lines = plt.gca().get_lines()
+        for i in range(max_trajectories * 2, len(lines)):
+            lines[i].set_visible(False)
+        # 更新图例
+        handles, labels = plt.gca().get_legend_handles_labels()
+        plt.legend(handles[:max_trajectories], labels[:max_trajectories])
+    else:
+        plt.legend()
     
-    # 保存主要文件名，用于HTML报告引用
-    main_path = os.path.join(output_dir, 'risk_trajectories.png')
+    # 添加红色虚线标记最优阈值
+    threshold = 0.5  # 默认阈值
     
-    # 保存带时间戳的图像
-    plt.savefig(timestamped_path, dpi=300, bbox_inches='tight')
+    # 尝试从evaluation_metrics.json加载最优阈值
+    metrics_file = os.path.join(output_dir, 'evaluation_metrics.json')
+    if os.path.exists(metrics_file):
+        try:
+            with open(metrics_file, 'r') as f:
+                metrics = json.load(f)
+                if 'optimal_threshold' in metrics:
+                    threshold = metrics['optimal_threshold']
+        except Exception as e:
+            logger.warning(f"无法加载评估指标文件: {e}")
     
-    # 同时也保存标准文件名的图像
-    plt.savefig(main_path, dpi=300, bbox_inches='tight')
+    plt.axhline(y=threshold, color='gray', linestyle='--', alpha=0.5, label=f'阈值 ({threshold:.3f})')
+    plt.axvline(x=0, color='r', linestyle='--', alpha=0.7)
     
+    # 保存图像 - 只生成一份文件，不加时间戳
+    figure_dir = os.path.join(output_dir, 'figures')
+    os.makedirs(figure_dir, exist_ok=True)
+    output_file = os.path.join(figure_dir, 'risk_trajectories.png')
+    plt.savefig(output_file, dpi=300, bbox_inches='tight')
     plt.close()
-    
-    logger.info(f"风险轨迹图已保存到: {timestamped_path}")
+    logger.info(f"风险轨迹图已保存到: {output_file}")
 
 
 def plot_feature_importance(output_dir):
@@ -439,24 +509,12 @@ def plot_feature_importance(output_dir):
     
     plt.tight_layout()
     
-    # 添加时间戳到文件名
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_file = os.path.join(output_dir, 'figures', f'feature_importance_{timestamp}.png')
-    
-    # 保存主要文件名，用于HTML报告引用
-    main_output_file = os.path.join(output_dir, 'figures', 'feature_importance.png')
-    
-    # 确保目录存在
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    
-    # 保存带时间戳的图像
+    # 只保存标准文件名的图像
+    figure_dir = os.path.join(output_dir, 'figures')
+    os.makedirs(figure_dir, exist_ok=True)
+    output_file = os.path.join(figure_dir, 'feature_importance.png')
     plt.savefig(output_file, dpi=300, bbox_inches='tight')
-    
-    # 同时也保存标准文件名的图像
-    plt.savefig(main_output_file, dpi=300, bbox_inches='tight')
-    
     plt.close()
-    
     logger.info(f"特征重要性图已保存至 {output_file}")
 
 
@@ -693,38 +751,57 @@ def plot_results(history, metrics, output_dir):
     figures_dir = os.path.join(output_dir, 'figures')
     os.makedirs(figures_dir, exist_ok=True)
     
-    # 设置matplotlib全局字体为英文
-    plt.switch_backend('Agg')
-    plt.rcParams['font.family'] = 'DejaVu Sans'
-    
-    # 绘制训练历史
-    if history is not None:
+    # 绘制训练历史曲线
+    if history:
         plot_training_history(history, output_dir)
     
-    # 绘制ROC曲线
-    plot_roc_curve(metrics, output_dir)
-    
     # 绘制混淆矩阵
-    plot_confusion_matrix(metrics, output_dir)
+    if metrics and 'confusion_matrix' in metrics:
+        plot_confusion_matrix(metrics, output_dir)
+    
+    # 绘制ROC曲线
+    if metrics and 'auroc' in metrics:
+        plot_roc_curve(metrics, output_dir)
     
     # 绘制风险轨迹图
-    plot_risk_trajectories(output_dir)
+    try:
+        plot_risk_trajectories(output_dir)
+    except Exception as e:
+        logger.warning(f"绘制风险轨迹图失败: {e}")
     
-    # 绘制特征重要性
-    plot_feature_importance(output_dir)
+    # 绘制特征重要性图
+    try:
+        plot_feature_importance(output_dir)
+    except Exception as e:
+        logger.warning(f"绘制特征重要性图失败: {e}")
     
     # 生成HTML报告
     try:
         generate_html_report(metrics, output_dir)
     except Exception as e:
-        logger.error(f"可视化生成失败: {e}")
-        logger.debug(f"错误详情: {str(e)}")
+        logger.error(f"生成HTML报告失败: {e}")
+    
+    # 打印评估指标摘要
+    threshold = metrics.get('optimal_threshold', 0.5)
+    logger.info("====== 评估指标摘要 ======")
+    logger.info(f"使用优化阈值: {threshold:.4f}")
+    logger.info(f"准确率: {metrics['accuracy']:.4f}")
+    logger.info(f"精确率: {metrics['precision']:.4f}")
+    logger.info(f"召回率: {metrics['recall']:.4f}")
+    logger.info(f"F1分数: {metrics['f1_score']:.4f}")
+    logger.info(f"特异性: {metrics['specificity']:.4f}")
+    logger.info(f"AUROC: {metrics['auroc']:.4f}")
+    logger.info(f"AUPRC: {metrics['auprc']:.4f}")
+    logger.info(f"混淆矩阵: TN={metrics['confusion_matrix']['tn']}, FP={metrics['confusion_matrix']['fp']}, FN={metrics['confusion_matrix']['fn']}, TP={metrics['confusion_matrix']['tp']}")
+    logger.info("============================")
+    
+    logger.info("可视化结果生成完成")
 
 
 def plot_training_history(history, output_dir):
     """
     绘制训练历史曲线
-    
+{{ ... }}
     Args:
         history: 训练历史记录字典
         output_dir: 输出目录
@@ -763,22 +840,13 @@ def plot_training_history(history, output_dir):
     
     plt.tight_layout()
     
-    # 添加时间戳到文件名
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_file = os.path.join(output_dir, 'figures', f'training_history_{timestamp}.png')
-    
-    # 保存主要文件名，用于HTML报告引用
-    main_output_file = os.path.join(output_dir, 'figures', 'training_history.png')
-    
+    # 保存图表 - 不加时间戳
+    output_file = os.path.join(output_dir, 'figures', 'training_history.png')
     # 确保目录存在
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    
-    # 保存带时间戳的图像
     plt.savefig(output_file, dpi=300, bbox_inches='tight')
-    
-    # 同时也保存标准文件名的图像
-    plt.savefig(main_output_file, dpi=300, bbox_inches='tight')
-    
     plt.close()
+    logger.info(f"训练历史曲线已保存至 {output_file}")
     
-    logger.info(f"训练历史曲线已保存至 {output_file}") 
+    # 只保留一个日志输出
+    pass

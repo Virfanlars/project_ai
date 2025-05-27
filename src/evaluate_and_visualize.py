@@ -35,6 +35,13 @@ logging.basicConfig(
         logging.StreamHandler(sys.stdout)
     ]
 )
+
+# 调整各模块的日志级别
+logging.getLogger('src.data_processor').setLevel(logging.WARNING)  # 只显示警告和错误
+logging.getLogger('src.models').setLevel(logging.ERROR)  # 只显示错误
+logging.getLogger('src.knowledge_graph').setLevel(logging.WARNING)  # 只显示警告和错误
+
+# 本模块日志
 logger = logging.getLogger(__name__)
 
 def parse_args():

@@ -317,23 +317,36 @@ def main():
                 text_embeds = torch.zeros(2, 768).to(device)
                 kg_embeds = torch.tensor(kg_embeddings['entity_embeddings'][:2], dtype=torch.float32).to(device)
                 
-                # 创建注意力掩码 - 使用更宽松的掩码条件
-                vitals_valid = vitals.sum(dim=2) != 0  # 至少有一个生命体征特征不为零
-                labs_valid = labs.sum(dim=2) != 0      # 至少有一个实验室值特征不为零
-                drugs_valid = drugs.sum(dim=2) != 0    # 至少有一个药物特征不为零
+                # 创建注意力掩码 - 改进的掩码条件
+                # 不仅仅检查所有特征是否为零，而是检查是否有缺失值（NaN或无穷大）
+                vitals_valid = ~torch.isnan(vitals).any(dim=2) & ~torch.isinf(vitals).any(dim=2)
+                labs_valid = ~torch.isnan(labs).any(dim=2) & ~torch.isinf(labs).any(dim=2)
+                drugs_valid = ~torch.isnan(drugs).any(dim=2) & ~torch.isinf(drugs).any(dim=2)
                 
-                # 至少一组特征有效，该位置就视为有效
-                valid_positions = vitals_valid | labs_valid | drugs_valid
+                # 此外，检查特征是否全为零
+                vitals_nonzero = vitals.abs().sum(dim=2) > 1e-6
+                labs_nonzero = labs.abs().sum(dim=2) > 1e-6
+                drugs_nonzero = drugs.abs().sum(dim=2) > 1e-6
+                
+                # 特征要么有效（非NaN和非Inf），要么至少有一个非零值
+                valid_positions = (vitals_valid & vitals_nonzero) | (labs_valid & labs_nonzero) | (drugs_valid & drugs_nonzero)
                 
                 # 反转为掩码（True表示填充位置）
                 attention_mask = ~valid_positions
                 
-                # 确保至少有一个非掩码位置
-                if attention_mask.all(dim=1).any():
-                    # 找出所有位置都被掩码的样本
-                    fully_masked = attention_mask.all(dim=1)
-                    # 对这些样本，将第一个位置设为非掩码
-                    attention_mask[fully_masked, 0] = False
+                # 确保每个样本至少有一个非掩码位置
+                for i in range(attention_mask.size(0)):
+                    if attention_mask[i].all():
+                        # 对全部被掩码的样本，将第一个位置设为非掩码
+                        attention_mask[i, 0] = False
+                        # 同时确保相应位置的特征至少有一些有意义的值
+                        if i < vitals.size(0) and 0 < vitals.size(1):
+                            # 对生命体征赋予合理的默认值
+                            vitals[i, 0, 0] = 75.0  # 正常心率约75次/分钟
+                            if vitals.size(2) > 1:
+                                vitals[i, 0, 1] = 16.0  # 正常呼吸频率约16次/分钟
+                            if vitals.size(2) > 2:
+                                vitals[i, 0, 2] = 36.8  # 正常体温约36.8°C
                 
                 # 测试前向传播
                 with torch.no_grad():
