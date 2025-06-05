@@ -340,7 +340,6 @@ def evaluate_model(model, model_path, data_loader, kg_embeddings, device, output
     false_alarm_rate = np.mean(false_alarm_rates) if false_alarm_rates else 0
     
     # 输出提前预警时间的详细信息
-    logger.info(f"收集到 {len(early_warning_hours)} 个提前预警样本")
     if early_warning_hours:
         logger.info(f"提前预警时间范围: {min(early_warning_hours):.2f} - {max(early_warning_hours):.2f} 小时")
         # 计算不同阈值的提前预警时间
@@ -396,9 +395,13 @@ def evaluate_model(model, model_path, data_loader, kg_embeddings, device, output
     logger.info(f"F1分数: {f1:.4f}")
     logger.info(f"特异性: {specificity:.4f}")
     logger.info(f"假警报率: {false_alarm_rate:.4f}")
-    logger.info(f"平均提前预警时间: {mean_early_warning:.2f}小时")
-    logger.info(f"中位提前预警时间: {median_early_warning:.2f}小时")
-    logger.info(f"混淆矩阵: TN={tn}, FP={fp}, FN={fn}, TP={tp}")
+    
+    # # 只在有提前预警样本时才打印提前预警时间
+    # if early_warning_hours:
+    #     logger.info(f"平均提前预警时间: {mean_early_warning:.2f}小时")
+    #     logger.info(f"中位提前预警时间: {median_early_warning:.2f}小时")
+    
+    # logger.info(f"混淆矩阵: TN={tn}, FP={fp}, FN={fn}, TP={tp}")
     
     return metrics
 
