@@ -527,37 +527,7 @@ def generate_embeddings(kg, method='TransE', embedding_dim=64, output_dir='./out
     
     except Exception as e:
         logger.error(f"训练嵌入时发生错误: {e}")
-        # 如果训练失败，返回一个默认的嵌入（全零向量）
-        logger.warning("由于训练失败，返回默认嵌入（全零向量）")
-        
-        # 创建默认嵌入
-        entity_count = len(kg.entity2id)
-        relation_count = len(kg.relation2id)
-        dim = min(embedding_dim, 64)
-        
-        entity_embeddings = np.zeros((entity_count, dim))
-        relation_embeddings = np.zeros((relation_count, dim))
-        
-        # 创建默认嵌入字典
-        default_embeddings = {
-            'method': 'default',
-            'dimension': dim,
-            'entity_embeddings': entity_embeddings,
-            'relation_embeddings': relation_embeddings,
-            'entity2id': kg.entity2id,
-            'relation2id': kg.relation2id,
-            'id2entity': kg.id2entity,
-            'id2relation': kg.id2relation
-        }
-        
-        # 保存默认嵌入
-        default_file = os.path.join(output_dir, "default_embeddings.pkl")
-        with open(default_file, 'wb') as f:
-            pickle.dump(default_embeddings, f)
-        
-        logger.info(f"默认嵌入已保存至 {default_file}")
-        
-        return default_embeddings
+        raise
 
 
 def get_entity_embedding(embeddings, entity_name):
@@ -696,3 +666,116 @@ def load_embeddings(embeddings_path):
     except Exception as e:
         logger.error(f"加载知识图谱嵌入失败: {e}")
         raise 
+
+
+class KnowledgeGraphEmbedder:
+    """
+    知识图谱嵌入器类，封装知识图谱嵌入功能
+    """
+    
+    def __init__(self, knowledge_graph, embedding_dim=64, method='TransE'):
+        """
+        初始化知识图谱嵌入器
+        
+        Args:
+            knowledge_graph: 知识图谱对象
+            embedding_dim: 嵌入维度
+            method: 嵌入方法
+        """
+        self.knowledge_graph = knowledge_graph
+        self.embedding_dim = embedding_dim
+        self.method = method
+        self.embeddings = None
+        
+    def train_embeddings(self, epochs=50, batch_size=128, lr=0.001):
+        """
+        训练知识图谱嵌入
+        
+        Args:
+            epochs: 训练轮数
+            batch_size: 批次大小
+            lr: 学习率
+            
+        Returns:
+            嵌入字典
+        """
+        try:
+            logger.info(f"开始训练{self.method}嵌入...")
+            
+            # 使用现有的generate_embeddings函数
+            self.embeddings = generate_embeddings(
+                kg=self.knowledge_graph,
+                method=self.method,
+                embedding_dim=self.embedding_dim,
+                output_dir='temp',  # 临时目录
+                force_train=True
+            )
+            
+            logger.info("知识图谱嵌入训练完成")
+            return self.embeddings
+            
+        except Exception as e:
+            logger.error(f"训练知识图谱嵌入失败: {e}")
+            # 返回随机嵌入作为备用
+            logger.warning("将使用随机嵌入作为备用")
+            return self._create_random_embeddings()
+    
+    def _create_random_embeddings(self):
+        """創建隨機嵌入作為備用"""
+        entity_count = len(self.knowledge_graph.entity2id) if hasattr(self.knowledge_graph, 'entity2id') else 100
+        relation_count = len(self.knowledge_graph.relation2id) if hasattr(self.knowledge_graph, 'relation2id') else 10
+        
+        embeddings = {
+            'method': 'Random',
+            'dimension': self.embedding_dim,
+            'entity_embeddings': np.random.randn(entity_count, self.embedding_dim).astype(np.float32),
+            'relation_embeddings': np.random.randn(relation_count, self.embedding_dim).astype(np.float32),
+            'entity2id': getattr(self.knowledge_graph, 'entity2id', {}),
+            'relation2id': getattr(self.knowledge_graph, 'relation2id', {}),
+            'id2entity': getattr(self.knowledge_graph, 'id2entity', {}),
+            'id2relation': getattr(self.knowledge_graph, 'id2relation', {})
+        }
+        
+        return embeddings
+    
+    def save_embeddings(self, output_path):
+        """
+        保存嵌入到文件
+        
+        Args:
+            output_path: 输出文件路径
+        """
+        if self.embeddings is None:
+            logger.error("没有可保存的嵌入，请先训练嵌入")
+            return
+        
+        try:
+            with open(output_path, 'wb') as f:
+                pickle.dump(self.embeddings, f)
+            logger.info(f"嵌入已保存到: {output_path}")
+        except Exception as e:
+            logger.error(f"保存嵌入失败: {e}")
+    
+    def load_embeddings(self, input_path):
+        """
+        从文件加载嵌入
+        
+        Args:
+            input_path: 输入文件路径
+        """
+        try:
+            with open(input_path, 'rb') as f:
+                self.embeddings = pickle.load(f)
+            logger.info(f"嵌入已从 {input_path} 加载")
+        except Exception as e:
+            logger.error(f"加载嵌入失败: {e}")
+            self.embeddings = None
+    
+    def get_embeddings(self):
+        """
+        获取嵌入
+        
+        Returns:
+            嵌入字典
+        """
+        return self.embeddings

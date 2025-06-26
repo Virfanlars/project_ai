@@ -179,130 +179,10 @@ def plot_risk_trajectories(output_dir, n_patients=12, max_trajectories=8):
     # 从详细结果中加载患者风险轨迹
     results_file = os.path.join(output_dir, 'patient_trajectories.csv')
     
-    # 强制每次生成新的模拟数据，确保它们具有良好的可视化效果
-    generate_new_data = True  # 如果想使用现有数据，请将此值设置为False
-    if generate_new_data or not os.path.exists(results_file):
-        # 创建模拟数据
-        np.random.seed(42)
-        df = pd.DataFrame()
-        
-        patient_ids = []
-        times = []
-        predictions = []
-        labels = []
-        sepsis_status = []  # 记录每个患者是否患有脓毒症
-        sepsis_onset_times = {}  # 记录每个患者的脓毒症发生时间
-        
-        # 确保脓毒症与非脓毒症患者的合理比例 (约30%是脓毒症患者)
-        is_sepsis_list = [True] * int(n_patients * 0.3) + [False] * (n_patients - int(n_patients * 0.3))
-        np.random.shuffle(is_sepsis_list)
-        
-        for patient_id in range(n_patients):
-            # 为每个患者生成一个合理的住院时长
-            length = np.random.randint(36, 72)  # 较短的观察时间，便于更清晰地展示变化
-            
-            # 确定患者是否最终发展为脓毒症
-            is_sepsis = is_sepsis_list[patient_id % len(is_sepsis_list)]
-            
-            # 创建时间轴 (每小时一个点)
-            time_hours = np.arange(length)
-            
-            # 关键改进: 确定脓毒症发生在时间轴中部，而非开始
-            if is_sepsis:
-                # 将脓毒症发生时间设置在时间轴40%-60%的位置
-                sepsis_onset = int(length * 0.4) + np.random.randint(0, int(length * 0.2))
-                sepsis_onset = max(24, min(sepsis_onset, length - 12))  # 确保至少24小时后，且留出至少12小时的后续时间
-                sepsis_onset_times[f"Patient_{patient_id}"] = sepsis_onset
-                logger.debug(f"Patient_{patient_id} 脓毒症发生时间: {sepsis_onset} (总时长: {length})")
-            
-            # 对每个时间点创建预测风险
-            for t in time_hours:
-                patient_ids.append(f"Patient_{patient_id}")
-                times.append(t)
-                sepsis_status.append(is_sepsis)
-                
-                # 生成不同的风险轨迹模式
-                if is_sepsis:
-                    # === 脓毒症患者的运行轨迹 ===
-                    # 关键: 创建更动态的风险变化，从低到高
-                    if t < sepsis_onset - 24:  # 早期期阶，相对24小时以上
-                        # 早期风险低，只有小波动
-                        progress = t / (sepsis_onset - 24) if sepsis_onset > 24 else 0.5
-                        base_risk = 0.05 + 0.15 * progress  # 非常缓慢的上升
-                        oscillation = 0.03 * np.sin(t/6)  # 添加小波动
-                        noise = np.random.normal(0, 0.02)  # 小噪声
-                        risk = max(0.05, min(base_risk + oscillation + noise, 0.3))
-                        label = 0
-                    elif t < sepsis_onset - 12:  # 脓毒症前12-24小时
-                        # 风险开始显著上升
-                        progress = (t - (sepsis_onset - 24)) / 12
-                        base_risk = 0.2 + 0.3 * progress  # 线性上升
-                        oscillation = 0.04 * np.sin(t/4)  # 中等波动
-                        noise = np.random.normal(0, 0.03)
-                        risk = max(0.2, min(base_risk + oscillation + noise, 0.6))
-                        label = 0
-                    elif t < sepsis_onset:  # 脓毒症前12小时
-                        # 风险快速上升
-                        progress = (t - (sepsis_onset - 12)) / 12
-                        base_risk = 0.5 + 0.3 * progress  # 更陡峭的上升
-                        oscillation = 0.05 * np.sin(t/3)  # 增大波动
-                        noise = np.random.normal(0, 0.03)
-                        risk = max(0.5, min(base_risk + oscillation + noise, 0.9))  # 接近阈值
-                        label = 0
-                    else:  # 脓毒症发生后
-                        # 风险维持在高位，有小波动
-                        time_since_onset = t - sepsis_onset
-                        # 脓毒症发生后的波动风险
-                        base_risk = 0.85 + 0.05 * np.sin(time_since_onset/2)  # 增加正弦波动
-                        noise = np.random.normal(0, 0.02)  # 很小的噪声
-                        risk = max(0.78, min(base_risk + noise, 0.95))  # 确保风险一直在高位
-                        label = 1  # 脓毒症发生后标记为1
-                else:
-                    # === 非脓毒症患者的风险轨迹 ===
-                    # 关键: 保持低风险，但有明显波动和短暂峰值
-                    
-                    # 确定是否是虚警峰值区域 (每个患者最多有10个虚警片段)
-                    has_false_alarm = False
-                    for i in range(10):  # 检查多个可能的虚警区域
-                        # 生成可能的虚警区域的开始时间
-                        # 将虚警区域分布在整个时间轴上，避免集中
-                        alarm_center = int(length * (0.2 + 0.6 * i / 10))
-                        alarm_duration = np.random.randint(3, 8)  # 虚警持续3-8小时
-                        
-                        # 如果当前时间在虚警区域内，并且以0.2的概率生成虚警
-                        if abs(t - alarm_center) < alarm_duration/2 and np.random.random() < 0.2:
-                            has_false_alarm = True
-                            break
-                    
-                    if has_false_alarm:  # 虚警区域 - 风险短暂上升
-                        alarm_progress = 1 - abs(t - alarm_center) / (alarm_duration/2)  # 0到1的进度值
-                        base_risk = 0.2 + 0.25 * alarm_progress * np.random.random()  # 峰值较高但不超过阈值
-                        noise = np.random.normal(0, 0.03 * alarm_progress)  # 噪声随虚警强度增加
-                        risk = max(0.1, min(base_risk + noise, 0.55))  # 确保不超过阈值
-                    else:  # 正常区域 - 风险保持在低水平
-                        # 使用正弦波模拟正常生理波动
-                        base_risk = 0.05 + 0.08 * np.random.random()
-                        oscillation = 0.05 * np.sin(t/5) + 0.03 * np.sin(t/12)  # 叠加两个正弦波创造更自然的波动
-                        noise = np.random.normal(0, 0.02)
-                        risk = max(0.02, min(base_risk + oscillation + noise, 0.25))  # 保持在明显低于阈值的水平
-                    
-                    label = 0  # 非脓毒症患者始终标记为0
-                
-                predictions.append(risk)
-                labels.append(label)
-        
-        # 创建DataFrame - 添加更多有用信息
-        df = pd.DataFrame({
-            'patient_id': patient_ids,
-            'time': times,
-            'prediction': predictions,
-            'label': labels,
-            'is_sepsis_patient': sepsis_status  # 添加患者脓毒症状态列
-        })
-        
-        # 保存到CSV文件
-        df.to_csv(results_file, index=False)
-        logger.info(f"生成了模拟风险轨迹数据: {results_file}")
+    # 检查真实数据文件是否存在
+    if not os.path.exists(results_file):
+        logger.error(f"患者轨迹数据文件不存在: {results_file}")
+        raise FileNotFoundError(f"无法找到患者轨迹数据文件: {results_file}")
     
     # 加载数据
     df = pd.read_csv(results_file)
@@ -532,55 +412,12 @@ def plot_feature_importance(output_dir):
     importance_file = os.path.join(output_dir, 'feature_importance.json')
     
     if not os.path.exists(importance_file):
-
-        vitals_importance = {
-            'heart_rate': np.random.uniform(0.12, 0.18),
-            'resp_rate': np.random.uniform(0.14, 0.20),
-            'temperature': np.random.uniform(0.10, 0.16),
-            'sbp': np.random.uniform(0.08, 0.14), 
-            'dbp': np.random.uniform(0.05, 0.10), 
-            'spo2': np.random.uniform(0.07, 0.12) 
-        }
-        
-        # 标准化生命体征重要性
-        vitals_sum = sum(vitals_importance.values())
-        vitals_importance = {k: v/vitals_sum for k, v in vitals_importance.items()}
-        
-        labs_importance = {
-            'lactate': np.random.uniform(0.18, 0.25),
-            'wbc': np.random.uniform(0.15, 0.22), 
-            'creatinine': np.random.uniform(0.10, 0.16),  
-            'bun': np.random.uniform(0.08, 0.14),      
-            'platelet': np.random.uniform(0.07, 0.12),  
-            'bilirubin': np.random.uniform(0.06, 0.10)     
-        }
-        
-        labs_sum = sum(labs_importance.values())
-        labs_importance = {k: v/labs_sum for k, v in labs_importance.items()}
-        
-        drugs_importance = {
-            'antibiotic': np.random.uniform(0.55, 0.65),
-            'vasopressor': np.random.uniform(0.35, 0.45) 
-        }
-        
-        drugs_sum = sum(drugs_importance.values())
-        drugs_importance = {k: v/drugs_sum for k, v in drugs_importance.items()}
-        
-        kg_importance = np.random.uniform(0.10, 0.20)
-        
-        feature_importance = {
-            'vitals': vitals_importance,
-            'labs': labs_importance,
-            'drugs': drugs_importance,
-            'kg': kg_importance
-        }
-        
-        os.makedirs(os.path.dirname(importance_file), exist_ok=True)
-        with open(importance_file, 'w') as f:
-            json.dump(feature_importance, f, indent=2)
-    else:
-        with open(importance_file, 'r') as f:
-            feature_importance = json.load(f)
+        logger.error(f"特征重要性数据文件不存在: {importance_file}")
+        raise FileNotFoundError(f"无法找到特征重要性数据文件: {importance_file}")
+    
+    # 加载特征重要性数据
+    with open(importance_file, 'r') as f:
+        feature_importance = json.load(f)
     
     # 创建特征重要性图表
     plt.figure(figsize=(14, 10))
@@ -950,7 +787,7 @@ def plot_results(history, metrics, output_dir):
 def plot_training_history(history, output_dir):
     """
     绘制训练历史曲线
-{{ ... }}
+    
     Args:
         history: 训练历史记录字典
         output_dir: 输出目录

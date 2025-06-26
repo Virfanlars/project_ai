@@ -215,11 +215,8 @@ def evaluate_model(model, model_path, data_loader, kg_embeddings, device, output
         fpr, tpr, thresholds = roc_curve(all_labels, all_preds)
         auroc = roc_auc_score(all_labels, all_preds)
     except:
-        logger.warning("计算AUROC时出错，可能是标签中只有一个类别")
-        auroc = 0.5  # 使用随机分类器的性能作为默认值
-        fpr = np.array([0, 1])
-        tpr = np.array([0, 1])
-        thresholds = np.array([1, 0])
+        logger.error("无法计算AUROC，标签数据质量不足")
+        raise ValueError("标签数据不足以计算AUROC")
         
     # 寻找最优阈值 - 使用平衡策略，确保精确率在0.7-0.9之间
     optimal_threshold = find_optimal_threshold(all_labels, all_preds, method='balanced')

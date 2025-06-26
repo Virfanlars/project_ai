@@ -236,6 +236,11 @@ def main():
     """主函数"""
     args = parse_args()
     
+    # 从环境变量或配置文件中获取UMLS API密钥
+    umls_api_key = os.getenv('UMLS_API_KEY', None)
+    if not umls_api_key:
+        logger.warning("未找到UMLS API密钥，某些知识图谱功能可能受限")
+    
     # 设置输出目录
     if args.output_dir is None:
         args.output_dir = args.model_dir
@@ -296,6 +301,9 @@ def main():
     # 加载知识图谱嵌入
     logger.info("加载知识图谱嵌入...")
     
+    # 创建知识图谱构建器
+    kg_builder = KnowledgeGraphBuilder(dataset=data_loaders['test'].dataset, umls_api_key=umls_api_key)
+    
     # 尝试多种可能的知识图谱嵌入文件名
     possible_kg_files = [
         os.path.join(args.model_dir, 'kg_embeddings.npz'),
@@ -343,13 +351,7 @@ def main():
             kg_embeddings = generate_embeddings(kg, method='TransE', embedding_dim=model_config['kg_dim'], output_dir=output_dir)
         except Exception as e:
             logger.error(f"知识图谱构建失败: {e}")
-            # 创建空的嵌入
-            kg_embeddings = {
-                'entity_embeddings': np.random.randn(10, model_config['kg_dim']),
-                'relation_embeddings': np.random.randn(5, model_config['kg_dim']),
-                'entity2id': {'dummy': 0},
-                'id2entity': {0: 'dummy'}
-            }
+            raise
     
     # 评估模型
     logger.info("评估模型性能...")
@@ -370,51 +372,8 @@ def main():
         
         logger.info("评估完成，指标已保存")
     except Exception as e:
-        
-        auroc = np.random.uniform(0.70, 0.82) 
-        auprc = np.random.uniform(0.40, 0.65) 
-        accuracy = np.random.uniform(0.75, 0.85)
-        precision_val = np.random.uniform(0.30, 0.60)
-        recall_val = np.random.uniform(0.40, 0.75)
-        f1 = 2 * (precision_val * recall_val) / (precision_val + recall_val) if (precision_val + recall_val) > 0 else 0
-        specificity = np.random.uniform(0.75, 0.90)
-        
-        mean_warning = np.random.uniform(3.0, 8.0)  # 3-8小时的提前预警时间
-        median_warning = mean_warning + np.random.uniform(-1.0, 1.0)
-        
-        n_samples = data_loaders['test'].dataset.__len__()
-        sepsis_ratio = 0.15 
-        n_sepsis = int(n_samples * sepsis_ratio)
-        n_non_sepsis = n_samples - n_sepsis
-        
-        tp = int(n_sepsis * recall_val)
-        fn = n_sepsis - tp
-        fp = int((1 - specificity) * n_non_sepsis)
-        tn = n_non_sepsis - fp
-        
-        metrics = {
-            'auroc': float(auroc),
-            'auprc': float(auprc),
-            'accuracy': float(accuracy),
-            'precision': float(precision_val),
-            'recall': float(recall_val),
-            'f1_score': float(f1),
-            'specificity': float(specificity),
-            'mean_early_warning_hours': float(mean_warning),
-            'median_early_warning_hours': float(median_warning),
-            'false_alarm_rate': float(1 - specificity),
-            'confusion_matrix': {
-                'tn': int(tn),
-                'fp': int(fp),
-                'fn': int(fn),
-                'tp': int(tp)
-            }
-        }
-        
-        # 保存评估指标
-        metrics_path = os.path.join(output_dir, 'evaluation_metrics.json')
-        with open(metrics_path, 'w') as f:
-            json.dump(metrics, f, indent=2)
+        logger.error(f"模型评估失败: {e}")
+        raise
     
     # 计算特征重要性（如果需要）
     if args.calc_importance:

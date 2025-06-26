@@ -1,0 +1,7 @@
+{
+  "umls_api_key": "YOUR_UMLS_API_KEY_HERE",
+  "use_external_apis": true,
+  "cache_duration_hours": 24,
+  "max_api_calls_per_minute": 60,
+  "note": "請在https://uts.nlm.nih.gov/uts/申請UMLS API密鑰並替換YOUR_UMLS_API_KEY_HERE"
+}

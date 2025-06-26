@@ -311,13 +311,8 @@ class SepsisTransformerModel(nn.Module):
             
             # 确保特征非零，如果所有特征都是零，添加一些随机特征
             if not valid_positions.any():
-                logger.warning("注意力权重计算中所有特征都是零，添加随机特征")
-                # 添加随机特征到生命体征的第一维
-                batch_size, seq_len = vitals.shape[0], vitals.shape[1]
-                vitals[:, 0, 0] = torch.randn(batch_size, device=vitals.device) * 5 + 70  # 模拟心率
-                # 重新计算有效位置
-                vitals_valid = vitals.sum(dim=2) != 0
-                valid_positions = vitals_valid | labs_valid | drugs_valid
+                logger.error("注意力权重计算中所有特征都是零")
+                raise ValueError("无法计算注意力权重：所有特征都是零")
             
             attention_mask = ~valid_positions
         
@@ -327,12 +322,8 @@ class SepsisTransformerModel(nn.Module):
             fully_masked = attention_mask.all(dim=1)
             num_fully_masked = fully_masked.sum().item()
             if num_fully_masked > 0:
-                logger.warning(f"注意力权重计算中发现{num_fully_masked}个样本的所有位置都被掩码，设置第一个时间点为有效")
-                # 对这些样本，将第一个位置设为非掩码
-                attention_mask[fully_masked, 0] = False
-                # 同时添加随机特征
-                vitals[fully_masked, 0, 0] = torch.randn(num_fully_masked, device=vitals.device) * 5 + 70
-                labs[fully_masked, 0, 0] = torch.randn(num_fully_masked, device=vitals.device) * 2 + 10
+                logger.error(f"注意力权重计算中发现{num_fully_masked}个样本的所有位置都被掩码")
+                raise ValueError("无法计算注意力权重：样本被完全掩码")
         
         # 将掩码转换为布尔类型，确保其维度正确
         if attention_mask.dtype != torch.bool:
@@ -458,13 +449,8 @@ class SepsisTransformerModel(nn.Module):
             
             # 确保特征非零，如果所有特征都是零，添加一些随机特征
             if not valid_positions.any():
-                logger.warning("注意力权重计算中所有特征都是零，添加随机特征")
-                # 添加随机特征到生命体征的第一维
-                batch_size, seq_len = vitals.shape[0], vitals.shape[1]
-                vitals[:, 0, 0] = torch.randn(batch_size, device=vitals.device) * 5 + 70  # 模拟心率
-                # 重新计算有效位置
-                vitals_valid = vitals.sum(dim=2) != 0
-                valid_positions = vitals_valid | labs_valid | drugs_valid
+                logger.error("注意力权重计算中所有特征都是零")
+                raise ValueError("无法计算注意力权重：所有特征都是零")
             
             attention_mask = ~valid_positions
         
@@ -474,12 +460,8 @@ class SepsisTransformerModel(nn.Module):
             fully_masked = attention_mask.all(dim=1)
             num_fully_masked = fully_masked.sum().item()
             if num_fully_masked > 0:
-                logger.warning(f"注意力权重计算中发现{num_fully_masked}个样本的所有位置都被掩码，设置第一个时间点为有效")
-                # 对这些样本，将第一个位置设为非掩码
-                attention_mask[fully_masked, 0] = False
-                # 同时添加随机特征
-                vitals[fully_masked, 0, 0] = torch.randn(num_fully_masked, device=vitals.device) * 5 + 70
-                labs[fully_masked, 0, 0] = torch.randn(num_fully_masked, device=vitals.device) * 2 + 10
+                logger.error(f"注意力权重计算中发现{num_fully_masked}个样本的所有位置都被掩码")
+                raise ValueError("无法计算注意力权重：样本被完全掩码")
         
         # 将掩码转换为布尔类型
         if attention_mask.dtype != torch.bool:

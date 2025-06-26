@@ -12,6 +12,10 @@ import pickle
 import numpy as np
 import torch
 import logging
+from .external_knowledge import ExternalMedicalKnowledgeBase
+import networkx as nx
+from typing import Dict, List, Tuple, Any, Optional
+from collections import defaultdict
 
 # 创建日志记录器
 logger = logging.getLogger(__name__)
@@ -127,6 +131,508 @@ class MedicalKnowledgeGraph:
         
         return kg
 
+class KnowledgeGraphBuilder:
+    """
+    知识图谱构建器类，整合外部医学知识库
+    """
+    
+    def __init__(self, umls_api_key: Optional[str] = None):
+        """
+        初始化知识图谱构建器
+        
+        Args:
+            umls_api_key: UMLS API密钥
+        """
+        self.graph = nx.DiGraph()
+        self.external_kb = ExternalMedicalKnowledgeBase(umls_api_key)
+        self.feature_mappings = {}
+        self.concept_cache = {}
+        
+    def build_sepsis_knowledge_graph(self) -> nx.DiGraph:
+        """
+        构建脓毒症相关的医学知识图谱
+        
+        Returns:
+            构建好的知识图谱
+        """
+        logger.info("开始构建脓毒症知识图谱...")
+        
+        try:
+            # 获取脓毒症相关概念
+            sepsis_concepts = self.external_kb.get_sepsis_related_concepts()
+            
+            # 添加概念节点
+            self._add_concept_nodes(sepsis_concepts)
+            
+            # 构建概念间关系
+            self._build_concept_relations(sepsis_concepts)
+            
+            # 添加特征映射
+            self._build_feature_mappings()
+            
+            logger.info(f"知识图谱构建完成，包含 {self.graph.number_of_nodes()} 个节点，{self.graph.number_of_edges()} 条边")
+            
+            return self.graph
+            
+        except Exception as e:
+            logger.error(f"构建知识图谱失败: {e}")
+            raise Exception(f"无法构建知识图谱: {e}")
+    
+    def _add_concept_nodes(self, concepts_dict: Dict[str, List[Dict[str, Any]]]):
+        """
+        添加概念节点到图中
+        
+        Args:
+            concepts_dict: 按来源分类的概念字典
+        """
+        for source, concepts in concepts_dict.items():
+            for concept in concepts:
+                # 生成节点ID
+                node_id = self._generate_node_id(concept, source)
+                
+                # 提取概念名称
+                name = self._extract_concept_name(concept, source)
+                
+                # 添加节点属性
+                node_attrs = {
+                    'name': name,
+                    'source': source,
+                    'type': 'medical_concept',
+                    'original_data': concept
+                }
+                
+                # 添加特定于来源的属性
+                if source == 'umls':
+                    node_attrs['cui'] = concept.get('cui', '')
+                elif source == 'snomed':
+                    node_attrs['sctid'] = concept.get('sctid', '')
+                    node_attrs['fsn'] = concept.get('fsn', '')
+                elif source == 'rxnorm_drugs':
+                    node_attrs['rxcui'] = concept.get('rxcui', '')
+                    node_attrs['tty'] = concept.get('tty', '')
+                elif 'clinical_' in source:
+                    node_attrs['clinical_id'] = concept.get('id', '')
+                
+                self.graph.add_node(node_id, **node_attrs)
+                
+                # 缓存概念
+                self.concept_cache[name.lower()] = node_id
+    
+    def _generate_node_id(self, concept: Dict[str, Any], source: str) -> str:
+        """
+        生成节点ID
+        
+        Args:
+            concept: 概念数据
+            source: 数据来源
+            
+        Returns:
+            节点ID
+        """
+        if source == 'umls':
+            return f"umls_{concept.get('cui', '')}"
+        elif source == 'snomed':
+            return f"snomed_{concept.get('sctid', '')}"
+        elif source == 'rxnorm_drugs':
+            return f"rxnorm_{concept.get('rxcui', '')}"
+        else:
+            # Clinical Tables等其他来源
+            concept_id = concept.get('id', '')
+            return f"{source}_{concept_id}"
+    
+    def _extract_concept_name(self, concept: Dict[str, Any], source: str) -> str:
+        """
+        提取概念名称
+        
+        Args:
+            concept: 概念数据
+            source: 数据来源
+            
+        Returns:
+            概念名称
+        """
+        if source == 'umls':
+            return concept.get('name', '')
+        elif source == 'snomed':
+            return concept.get('name', '') or concept.get('fsn', '')
+        elif source == 'rxnorm_drugs':
+            return concept.get('name', '')
+        else:
+            return concept.get('name', '') or concept.get('id', '')
+    
+    def _build_concept_relations(self, concepts_dict: Dict[str, List[Dict[str, Any]]]):
+        """
+        构建概念间的关系
+        
+        Args:
+            concepts_dict: 概念字典
+        """
+        logger.info("构建概念间关系...")
+        
+        # 为每个概念查询关系
+        for source, concepts in concepts_dict.items():
+            for concept in concepts[:5]:  # 限制数量以避免过多API调用
+                try:
+                    concept_id = self._get_concept_id_for_relations(concept, source)
+                    if concept_id:
+                        relations = self.external_kb.get_concept_relations(concept_id, source)
+                        self._add_relations_to_graph(concept, source, relations)
+                        
+                except Exception as e:
+                    logger.warning(f"获取概念关系失败 {concept}: {e}")
+                    continue
+        
+        # 添加基于名称的语义关系
+        self._add_semantic_relations()
+    
+    def _get_concept_id_for_relations(self, concept: Dict[str, Any], source: str) -> Optional[str]:
+        """
+        获取用于查询关系的概念ID
+        
+        Args:
+            concept: 概念数据
+            source: 数据来源
+            
+        Returns:
+            概念ID
+        """
+        if source == 'umls':
+            return concept.get('cui')
+        elif source == 'snomed':
+            return concept.get('sctid')
+        return None
+    
+    def _add_relations_to_graph(self, source_concept: Dict[str, Any], source: str, relations: List[Dict[str, Any]]):
+        """
+        将关系添加到图中
+        
+        Args:
+            source_concept: 源概念
+            source: 数据来源
+            relations: 关系列表
+        """
+        source_node_id = self._generate_node_id(source_concept, source)
+        
+        for relation in relations:
+            try:
+                # 提取目标概念信息
+                if source == 'umls':
+                    target_cui = relation.get('target_cui', '')
+                    if target_cui:
+                        target_node_id = f"umls_{target_cui}"
+                        relation_type = relation.get('relation_type', 'related_to')
+                elif source == 'snomed':
+                    target_sctid = relation.get('target_sctid', '')
+                    if target_sctid:
+                        target_node_id = f"snomed_{target_sctid}"
+                        relation_type = relation.get('relation_type', 'related_to')
+                else:
+                    continue
+                
+                # 如果目标节点不存在，创建一个基本节点
+                if target_node_id not in self.graph:
+                    self.graph.add_node(target_node_id, 
+                                      name=f"concept_{target_node_id}", 
+                                      source=source,
+                                      type='external_concept')
+                
+                # 添加边
+                self.graph.add_edge(source_node_id, target_node_id, 
+                                  relation_type=relation_type,
+                                  source=source)
+                
+            except Exception as e:
+                logger.warning(f"添加关系失败: {e}")
+                continue
+    
+    def _add_semantic_relations(self):
+        """
+        基于概念名称添加语义关系
+        """
+        logger.info("添加语义关系...")
+        
+        # 定义语义关系规则
+        semantic_rules = {
+            'sepsis': ['infection', 'inflammation', 'shock'],
+            'infection': ['antibiotic', 'fever', 'leukocytosis'],
+            'shock': ['hypotension', 'vasopressor'],
+            'organ failure': ['kidney', 'liver', 'lung'],
+            'antibiotic': ['treatment', 'antimicrobial'],
+        }
+        
+        # 应用语义规则
+        for concept1, related_terms in semantic_rules.items():
+            concept1_nodes = self._find_nodes_by_name_pattern(concept1)
+            
+            for term in related_terms:
+                concept2_nodes = self._find_nodes_by_name_pattern(term)
+                
+                for node1 in concept1_nodes:
+                    for node2 in concept2_nodes:
+                        if node1 != node2:
+                            self.graph.add_edge(node1, node2, 
+                                              relation_type='semantic_related',
+                                              source='inferred')
+    
+    def _find_nodes_by_name_pattern(self, pattern: str) -> List[str]:
+        """
+        根据名称模式查找节点
+        
+        Args:
+            pattern: 搜索模式
+            
+        Returns:
+            匹配的节点ID列表
+        """
+        matching_nodes = []
+        pattern_lower = pattern.lower()
+        
+        for node_id, node_data in self.graph.nodes(data=True):
+            node_name = node_data.get('name', '').lower()
+            if pattern_lower in node_name:
+                matching_nodes.append(node_id)
+        
+        return matching_nodes
+    
+    def _build_feature_mappings(self):
+        """
+        构建数据特征到医学概念的映射
+        """
+        logger.info("构建特征映射...")
+        
+        # 定义特征到概念的映射规则
+        feature_mappings = {
+            # 生命体征
+            'heart_rate': ['tachycardia', 'bradycardia', 'cardiac'],
+            'blood_pressure': ['hypotension', 'hypertension'],
+            'temperature': ['fever', 'hypothermia'],
+            'respiratory_rate': ['tachypnea', 'respiratory'],
+            'oxygen_saturation': ['hypoxia', 'respiratory failure'],
+            
+            # 实验室检查
+            'white_blood_cell': ['leukocytosis', 'leukopenia', 'infection'],
+            'lactate': ['hyperlactatemia', 'tissue hypoxia'],
+            'creatinine': ['kidney dysfunction', 'renal failure'],
+            'bilirubin': ['liver dysfunction', 'hepatic failure'],
+            'platelet': ['thrombocytopenia', 'coagulopathy'],
+            'procalcitonin': ['bacterial infection', 'sepsis'],
+            
+            # 治疗
+            'antibiotic': ['antimicrobial therapy', 'infection treatment'],
+            'vasopressor': ['shock treatment', 'hypotension'],
+            'fluid': ['resuscitation', 'volume expansion'],
+            'mechanical_ventilation': ['respiratory support', 'ARDS'],
+        }
+        
+        # 为每个特征查找对应的概念节点
+        for feature, concept_terms in feature_mappings.items():
+            related_nodes = []
+            
+            for term in concept_terms:
+                nodes = self._find_nodes_by_name_pattern(term)
+                related_nodes.extend(nodes)
+            
+            if related_nodes:
+                self.feature_mappings[feature] = list(set(related_nodes))
+        
+        logger.info(f"构建了 {len(self.feature_mappings)} 个特征映射")
+    
+    def get_concept_embeddings_for_features(self, features: List[str]) -> Dict[str, np.ndarray]:
+        """
+        获取特征对应的概念嵌入
+        
+        Args:
+            features: 特征名称列表
+            
+        Returns:
+            特征到嵌入的映射
+        """
+        embeddings = {}
+        
+        for feature in features:
+            if feature in self.feature_mappings:
+                # 获取相关概念节点
+                concept_nodes = self.feature_mappings[feature]
+                
+                # 计算概念嵌入（这里用简单的节点度数作为示例）
+                concept_embedding = np.zeros(128)  # 假设128维嵌入
+                
+                for node in concept_nodes:
+                    if node in self.graph:
+                        # 使用节点的连接信息生成简单嵌入
+                        node_degree = self.graph.degree(node)
+                        node_centrality = nx.degree_centrality(self.graph).get(node, 0)
+                        
+                        # 生成基于图结构的特征向量
+                        node_features = np.array([
+                            node_degree,
+                            node_centrality,
+                            len(list(self.graph.neighbors(node))),
+                            # 添加更多图特征...
+                        ])
+                        
+                        # 扩展到128维（重复和变换）
+                        if len(node_features) < 128:
+                            repeat_times = 128 // len(node_features)
+                            remainder = 128 % len(node_features)
+                            concept_embedding += np.concatenate([
+                                np.tile(node_features, repeat_times),
+                                node_features[:remainder]
+                            ])
+                
+                # 归一化
+                if len(concept_nodes) > 0:
+                    concept_embedding /= len(concept_nodes)
+                    concept_embedding = concept_embedding / (np.linalg.norm(concept_embedding) + 1e-8)
+                
+                embeddings[feature] = concept_embedding
+        
+        return embeddings
+    
+    def save_graph(self, filepath: str):
+        """
+        保存知识图谱
+        
+        Args:
+            filepath: 保存路径
+        """
+        try:
+            # 确保目录存在
+            os.makedirs(os.path.dirname(filepath), exist_ok=True)
+            
+            # 保存图和映射
+            data_to_save = {
+                'graph': self.graph,
+                'feature_mappings': self.feature_mappings,
+                'concept_cache': self.concept_cache
+            }
+            
+            with open(filepath, 'wb') as f:
+                pickle.dump(data_to_save, f)
+                
+            logger.info(f"知识图谱已保存到: {filepath}")
+            
+        except Exception as e:
+            logger.error(f"保存知识图谱失败: {e}")
+            raise
+    
+    def load_graph(self, filepath: str) -> bool:
+        """
+        加载知识图谱
+        
+        Args:
+            filepath: 文件路径
+            
+        Returns:
+            是否加载成功
+        """
+        try:
+            if not os.path.exists(filepath):
+                logger.warning(f"知识图谱文件不存在: {filepath}")
+                return False
+            
+            with open(filepath, 'rb') as f:
+                data = pickle.load(f)
+            
+            self.graph = data['graph']
+            self.feature_mappings = data['feature_mappings']
+            self.concept_cache = data['concept_cache']
+            
+            logger.info(f"知识图谱已从 {filepath} 加载")
+            return True
+            
+        except Exception as e:
+            logger.error(f"加载知识图谱失败: {e}")
+            return False
+    
+    def get_graph_statistics(self) -> Dict[str, Any]:
+        """
+        获取图统计信息
+        
+        Returns:
+            统计信息字典
+        """
+        if self.graph.number_of_nodes() == 0:
+            return {'nodes': 0, 'edges': 0}
+        
+        stats = {
+            'nodes': self.graph.number_of_nodes(),
+            'edges': self.graph.number_of_edges(),
+            'density': nx.density(self.graph),
+            'feature_mappings': len(self.feature_mappings),
+            'sources': {}
+        }
+        
+        # 按来源统计节点
+        for node, data in self.graph.nodes(data=True):
+            source = data.get('source', 'unknown')
+            if source not in stats['sources']:
+                stats['sources'][source] = 0
+            stats['sources'][source] += 1
+        
+        return stats
+    
+    def find_concept_by_name(self, name: str) -> Optional[str]:
+        """
+        根据名称查找概念节点
+        
+        Args:
+            name: 概念名称
+            
+        Returns:
+            节点ID或None
+        """
+        name_lower = name.lower()
+        
+        # 首先查找缓存
+        if name_lower in self.concept_cache:
+            return self.concept_cache[name_lower]
+        
+        # 在图中搜索
+        for node_id, node_data in self.graph.nodes(data=True):
+            node_name = node_data.get('name', '').lower()
+            if name_lower in node_name or node_name in name_lower:
+                self.concept_cache[name_lower] = node_id
+                return node_id
+        
+        return None
+    
+    def get_related_concepts(self, concept_name: str, max_depth: int = 2) -> List[Tuple[str, str, int]]:
+        """
+        获取相关概念
+        
+        Args:
+            concept_name: 概念名称
+            max_depth: 最大搜索深度
+            
+        Returns:
+            相关概念列表 (节点ID, 概念名称, 距离)
+        """
+        start_node = self.find_concept_by_name(concept_name)
+        if not start_node:
+            return []
+        
+        related_concepts = []
+        
+        try:
+            # 使用广度优先搜索查找相关概念
+            for target_node in self.graph.nodes():
+                if target_node != start_node:
+                    try:
+                        path_length = nx.shortest_path_length(self.graph, start_node, target_node)
+                        if path_length <= max_depth:
+                            node_data = self.graph.nodes[target_node]
+                            concept_name = node_data.get('name', target_node)
+                            related_concepts.append((target_node, concept_name, path_length))
+                    except nx.NetworkXNoPath:
+                        continue
+        except Exception as e:
+            logger.warning(f"搜索相关概念时出错: {e}")
+        
+        # 按距离排序
+        related_concepts.sort(key=lambda x: x[2])
+        return related_concepts
+
 def build_medical_ontology():
     """
     构建医学本体
@@ -198,25 +704,7 @@ def build_medical_ontology():
     for vasopressor in ["Norepinephrine", "Epinephrine", "Dopamine", "Vasopressin"]:
         kg.add_triple("SepticShock", "treated_by", vasopressor)
     
-    # 药物类型关系
-    for antibiotic in ["Ceftriaxone", "Vancomycin", "Piperacillin", 
-                      "Meropenem", "Ciprofloxacin", "Levofloxacin"]:
-        kg.add_triple(antibiotic, "is_a", "Antibiotic")
-    
-    for vasopressor in ["Norepinephrine", "Epinephrine", "Dopamine", "Vasopressin"]:
-        kg.add_triple(vasopressor, "is_a", "Vasopressor")
-    
-    # 实验室检查关系
-    kg.add_triple("Lactate", "indicates", "Hyperlactatemia")
-    kg.add_triple("Platelet", "indicates", "Thrombocytopenia")
-    kg.add_triple("WBC", "indicates", "Leukocytosis")
-    kg.add_triple("WBC", "indicates", "Leukopenia")
-    kg.add_triple("Creatinine", "indicates", "AcuteKidneyInjury")
-    kg.add_triple("BUN", "indicates", "AcuteKidneyInjury")
-    kg.add_triple("Bilirubin", "indicates", "Hyperbilirubinemia")
-    
-    logger.info(f"医学本体构建完成，包含{len(kg.entity2id)}个实体，{len(kg.triples)}个关系")
-    
+    logger.info(f"构建医学本体完成，包含{len(kg.entity2id)}个实体")
     return kg
 
 def enrich_with_patient_data(kg, dataset):
@@ -259,84 +747,41 @@ def enrich_with_patient_data(kg, dataset):
         'heart_rate': 'Tachycardia',
         'resp_rate': 'Tachypnea',
         'temperature': 'Fever',
-        'sbp': 'Hypotension',
-        'dbp': 'Hypotension'
+        'sbp': 'Hypotension'
     }
     
-    # 实验室值到实体的映射
-    lab_to_entity = {
-        'wbc': ['Leukocytosis', 'Leukopenia'],  # 白细胞增多/减少
-        'creatinine': 'AcuteKidneyInjury',
-        'bun': 'AcuteKidneyInjury',
-        'lactate': 'Hyperlactatemia',
-        'platelet': 'Thrombocytopenia',
-        'bilirubin': 'Hyperbilirubinemia'
-    }
-    
-    # 药物到实体的映射
-    drug_to_entity = {
-        'antibiotic': ['Ceftriaxone', 'Vancomycin', 'Piperacillin'],
-        'vasopressor': ['Norepinephrine', 'Epinephrine', 'Dopamine']
-    }
-    
-    # 检查并适配不同类型的数据集
-    has_vitals_features = hasattr(dataset, 'vitals_features')
-    has_lab_features = hasattr(dataset, 'lab_features')
-    has_drug_features = hasattr(dataset, 'drug_features')
-    
-    # 如果没有特征列表，则使用默认值
-    default_vitals_features = ['heart_rate', 'resp_rate', 'temperature', 'sbp', 'dbp', 'spo2']
-    default_lab_features = ['wbc', 'creatinine', 'bun', 'lactate', 'platelet', 'bilirubin'] 
-    default_drug_features = ['antibiotic', 'vasopressor']
-    
-    # 处理每个患者的数据
-    for i in range(len(dataset)):
-        try:
-            sample = dataset[i]
+    # 处理生命体征数据
+    for feature_idx, feature_name in enumerate(vitals_features):
+        if feature_idx >= vitals.shape[1]:
+            # 跳过超出范围的特征
+            continue
+        
+        if feature_name in vital_to_entity and feature_name in vital_thresholds:
+            # 取所有时间点的均值
+            feature_vals = vitals[:, feature_idx]
+            feature_vals = feature_vals[feature_vals != 0]  # 排除零值
             
-            # 创建患者实体ID（用索引作为ID）
-            patient_id = f"Patient_{i}"
-            kg.add_entity(patient_id, "Patient")
-            
-            # 如果有脓毒症，添加关系
-            if torch.any(sample['labels'] > 0):
-                kg.add_triple(patient_id, "diagnosed_with", "Sepsis")
-            
-            # 处理生命体征
-            vitals = sample['vitals'].cpu().numpy()
-            vitals_features = dataset.vitals_features if has_vitals_features else default_vitals_features
-            
-            for feature_idx, feature_name in enumerate(vitals_features):
-                if feature_idx >= vitals.shape[1]:
-                    # 跳过超出范围的特征
-                    continue
-                    
-                if feature_name in vital_to_entity and feature_name in vital_thresholds:
-                    # 取所有时间点的均值
-                    feature_vals = vitals[:, feature_idx]
-                    feature_vals = feature_vals[feature_vals != 0]  # 排除零值
-                    
-                    if len(feature_vals) > 0:
-                        mean_val = np.mean(feature_vals)
-                        threshold = vital_thresholds[feature_name]
-                        
-                        # 根据不同生命体征的判断条件
-                        if feature_name in ['sbp', 'dbp']:
-                            # 低血压判断
-                            if mean_val < threshold:
-                                entity_name = vital_to_entity[feature_name]
-                                relation_key = (patient_id, "has_symptom", entity_name)
-                                if relation_key not in added_relations:
-                                    kg.add_triple(patient_id, "has_symptom", entity_name)
-                                    added_relations.add(relation_key)
-                        else:
-                            # 高值判断（心动过速、呼吸急促、发热）
-                            if mean_val > threshold:
-                                entity_name = vital_to_entity[feature_name]
-                                relation_key = (patient_id, "has_symptom", entity_name)
-                                if relation_key not in added_relations:
-                                    kg.add_triple(patient_id, "has_symptom", entity_name)
-                                    added_relations.add(relation_key)
+            if len(feature_vals) > 0:
+                mean_val = np.mean(feature_vals)
+                threshold = vital_thresholds[feature_name]
+                
+                # 根据不同生命体征的判断条件
+                if feature_name in ['sbp', 'dbp']:
+                    # 低血压判断
+                    if mean_val < threshold:
+                        entity_name = vital_to_entity[feature_name]
+                        relation_key = (patient_id, "has_symptom", entity_name)
+                        if relation_key not in added_relations:
+                            kg.add_triple(patient_id, "has_symptom", entity_name)
+                            added_relations.add(relation_key)
+                else:
+                    # 高值判断（心动过速、呼吸急促、发热）
+                    if mean_val > threshold:
+                        entity_name = vital_to_entity[feature_name]
+                        relation_key = (patient_id, "has_symptom", entity_name)
+                        if relation_key not in added_relations:
+                            kg.add_triple(patient_id, "has_symptom", entity_name)
+                            added_relations.add(relation_key)
             
             # 处理实验室值
             labs = sample['labs'].cpu().numpy()
@@ -394,19 +839,20 @@ def enrich_with_patient_data(kg, dataset):
                     # 跳过超出范围的特征
                     continue
                     
-                if feature_name in drug_to_entity:
-                    # 如果在任何时间点使用了该类药物
-                    if np.any(drugs[:, feature_idx] > 0):
-                        # 随机选择一种该类药物（简化处理）
-                        entity_names = drug_to_entity[feature_name]
-                        entity_name = np.random.choice(entity_names)
-                        relation_key = (patient_id, "receives", entity_name)
-                        if relation_key not in added_relations:
-                            kg.add_triple(patient_id, "receives", entity_name)
-                            added_relations.add(relation_key)
-        except Exception as e:
-            logger.warning(f"处理患者 {i} 数据时出错: {e}，跳过该患者")
-            continue
+                try:
+                    if feature_name in drug_to_entity:
+                        # 如果在任何时间点使用了该类药物
+                        if np.any(drugs[:, feature_idx] > 0):
+                            # 随机选择一种该类药物（简化处理）
+                            entity_names = drug_to_entity[feature_name]
+                            entity_name = np.random.choice(entity_names)
+                            relation_key = (patient_id, "receives", entity_name)
+                            if relation_key not in added_relations:
+                                kg.add_triple(patient_id, "receives", entity_name)
+                                added_relations.add(relation_key)
+                except Exception as e:
+                    logger.warning(f"处理患者 {i} 数据时出错: {e}，跳过该患者")
+                    continue
     
     # 由于可能的错误处理，暂时取消添加患者相似性
     # add_patient_similarities(kg, dataset)

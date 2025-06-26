@@ -593,7 +593,7 @@ class SimpleSepsisDataset(Dataset):
             self.time_indices.append(time_indices)
         
         # 报告特征匹配统计
-        logger.info(f"特征提取完成: 总患者数 {total_patients}, 成功匹配特征 {matched_features_count}, 全零样本 {zero_features_count}")
+        logger.info(f"特征提取完成: 总患者数 {total_patients}, 成功匹配特征 {matched_features_count}")
         
         # 如果所有样本都是全零，发出严重警告
         if zero_features_count == total_patients:
@@ -616,8 +616,7 @@ class SimpleSepsisDataset(Dataset):
     
     def _ensure_nonzero_features(self, vitals_mat, labs_mat, drugs_mat):
         """
-        确保每个样本至少有一个非零特征，防止被完全掩码
-        使用医学上合理的默认值替代随机值，并引入阈值检测
+        检查特征矩阵是否全零，如果是则抛出异常
         """
         # 设置零值容忍阈值 - 如果总和小于此值，视为需要填充
         zero_threshold = 1e-6
@@ -633,72 +632,8 @@ class SimpleSepsisDataset(Dataset):
                    f"药物: 形状={drugs_mat.shape}, 总和={drugs_mat.sum():.4f}")
         
         if all_zero:
-            
-            # 所有特征都接近零，填充医学上合理的默认值
-            n_timepoints = vitals_mat.shape[0]
-            
-            # 为生命体征添加合理的默认值
-            if vitals_mat.shape[1] >= 1:  # 心率 (HR)
-                vitals_mat[:, 0] = 75 + np.random.normal(0, 5, size=n_timepoints)  # 正常心率约75次/分钟
-            if vitals_mat.shape[1] >= 2:  # 呼吸频率 (RR)
-                vitals_mat[:, 1] = 16 + np.random.normal(0, 2, size=n_timepoints)  # 正常呼吸频率约16次/分钟
-            if vitals_mat.shape[1] >= 3:  # 体温 (Temperature)
-                vitals_mat[:, 2] = 36.8 + np.random.normal(0, 0.3, size=n_timepoints)  # 正常体温约36.8°C
-            if vitals_mat.shape[1] >= 4:  # 收缩压 (SBP)
-                vitals_mat[:, 3] = 120 + np.random.normal(0, 5, size=n_timepoints)  # 正常收缩压约120 mmHg
-            if vitals_mat.shape[1] >= 5:  # 舒张压 (DBP)
-                vitals_mat[:, 4] = 80 + np.random.normal(0, 5, size=n_timepoints)  # 正常舒张压约80 mmHg
-            if vitals_mat.shape[1] >= 6:  # 血氧饱和度 (SpO2)
-                vitals_mat[:, 5] = 98 + np.random.normal(0, 1, size=n_timepoints)  # 正常血氧饱和度约98%
-                # 确保血氧饱和度不超过100%
-                vitals_mat[:, 5] = np.clip(vitals_mat[:, 5], 90, 100)
-            
-            # 为实验室值添加合理的默认值
-            if labs_mat.shape[1] >= 1:  # 白细胞计数 (WBC)
-                labs_mat[:, 0] = 7.5 + np.random.normal(0, 1.5, size=n_timepoints)  # 正常白细胞计数约7.5×10^9/L
-            if labs_mat.shape[1] >= 2:  # 肌酐 (Creatinine)
-                labs_mat[:, 1] = 0.9 + np.random.normal(0, 0.2, size=n_timepoints)  # 正常肌酐约0.9 mg/dL
-                # 确保肌酐不小于0
-                labs_mat[:, 1] = np.maximum(0.5, labs_mat[:, 1])
-            if labs_mat.shape[1] >= 3:  # 血尿素氮 (BUN)
-                labs_mat[:, 2] = 14 + np.random.normal(0, 3, size=n_timepoints)  # 正常BUN约14 mg/dL
-            if labs_mat.shape[1] >= 4:  # 乳酸 (Lactate)
-                labs_mat[:, 3] = 1.2 + np.random.normal(0, 0.3, size=n_timepoints)  # 正常乳酸约1.2 mmol/L
-                # 确保乳酸不小于0
-                labs_mat[:, 3] = np.maximum(0.5, labs_mat[:, 3])
-            if labs_mat.shape[1] >= 5:  # 血小板计数 (Platelet)
-                labs_mat[:, 4] = 250 + np.random.normal(0, 40, size=n_timepoints)  # 正常血小板约250×10^9/L
-            if labs_mat.shape[1] >= 6:  # 总胆红素 (Bilirubin)
-                labs_mat[:, 5] = 0.8 + np.random.normal(0, 0.2, size=n_timepoints)  # 正常总胆红素约0.8 mg/dL
-                # 确保胆红素不小于0
-                labs_mat[:, 5] = np.maximum(0.2, labs_mat[:, 5])
-            
-            # 药物使用默认值 - 假设大多数患者一开始不使用这些药物
-            if drugs_mat.shape[1] >= 1:  # 抗生素
-                drugs_mat[:, 0] = np.random.choice([0, 1], size=n_timepoints, p=[0.8, 0.2])  # 20%概率使用抗生素
-            if drugs_mat.shape[1] >= 2:  # 升压药
-                drugs_mat[:, 1] = np.random.choice([0, 1], size=n_timepoints, p=[0.9, 0.1])  # 10%概率使用升压药
-            
-            # 对于时间序列数据，可以添加一些时间相关的变化
-            if n_timepoints > 1:
-                # 对于病程中期，为少数时间点添加药物使用
-                # 病程中间部分偶尔有药物使用
-                middle_start = n_timepoints//4
-                middle_end = 3*n_timepoints//4
-                if middle_start < middle_end and drugs_mat.shape[1] >= 1:
-                    # 约20%的概率使用抗生素，在中期有30%的概率
-                    drug_mask = np.random.random(size=middle_end-middle_start) < 0.3
-                    if drug_mask.any():
-                        drugs_mat[middle_start:middle_end, 0][drug_mask] = 1
-            
-            # 记录填充后的统计信息
-            logger.debug(f"填充后特征矩阵统计 - 生命体征: 总和={vitals_mat.sum():.4f}, "
-                       f"实验室值: 总和={labs_mat.sum():.4f}, "
-                       f"药物: 总和={drugs_mat.sum():.4f}")
-            
-            
-            # 强制返回修改后的矩阵
-            return vitals_mat, labs_mat, drugs_mat
+            logger.error("患者数据缺失，无法构建有效的特征矩阵")
+            raise ValueError("患者特征矩阵全零，数据质量不足")
         
         # 如果不是全零，返回原始矩阵
         return vitals_mat, labs_mat, drugs_mat
@@ -820,8 +755,7 @@ def collate_fn(batch):
 
 def ensure_valid_features_in_batch(vitals, labs, drugs, attention_mask):
     """
-    确保批次中每个样本在有效位置上至少有一个非零特征
-    使用医学上合理的默认值替代随机值
+    检查批次中每个样本在有效位置上是否有非零特征，如果没有则抛出异常
     
     Args:
         vitals: 生命体征特征张量 [batch_size, seq_len, vitals_dim]
@@ -831,7 +765,6 @@ def ensure_valid_features_in_batch(vitals, labs, drugs, attention_mask):
     """
     batch_size = vitals.size(0)
     zero_threshold = 1e-6
-    fixed_samples = 0
     
     for i in range(batch_size):
         # 获取非填充位置的掩码
@@ -849,98 +782,8 @@ def ensure_valid_features_in_batch(vitals, labs, drugs, attention_mask):
                        f"药物={non_padding_drugs:.4f}")
             
             if non_padding_vitals < zero_threshold and non_padding_labs < zero_threshold and non_padding_drugs < zero_threshold:
-                # 所有特征都接近零，在非填充位置添加医学上合理的默认值
-                valid_positions = torch.where(non_padding)[0]
-                n_valid = len(valid_positions)
-                
-                if n_valid > 0:
-                    fixed_samples += 1
-                    
-                    # 为所有有效位置都添加合理值，而不仅仅是第一个
-                    for pos_idx, pos in enumerate(valid_positions):
-                        time_factor = pos_idx / max(1, (n_valid - 1))  # 时间进程因子 (0-1)
-                        
-                        # 为生命体征添加合理的默认值
-                        # 心率 (HR) - 随时间略微上升
-                        base_hr = 75 + torch.randn(1, device=vitals.device) * 5
-                        vitals[i, pos, 0] = base_hr * (1 + 0.1 * time_factor)
-                        
-                        # 呼吸频率 (RR) - 随时间略微上升
-                        if vitals.size(2) > 1:
-                            base_rr = 16 + torch.randn(1, device=vitals.device) * 2
-                            vitals[i, pos, 1] = base_rr * (1 + 0.15 * time_factor)
-                        
-                        # 体温 (Temperature) - 可能略微上升
-                        if vitals.size(2) > 2:
-                            base_temp = 36.8 + torch.randn(1, device=vitals.device) * 0.3
-                            vitals[i, pos, 2] = base_temp * (1 + 0.02 * time_factor)
-                        
-                        # 收缩压 (SBP) - 可能有波动
-                        if vitals.size(2) > 3:
-                            base_sbp = 120 + torch.randn(1, device=vitals.device) * 5
-                            vitals[i, pos, 3] = base_sbp * (1 + 0.05 * (torch.sin(torch.tensor(pos_idx * 0.5))))
-                        
-                        # 舒张压 (DBP) - 与收缩压协同变化
-                        if vitals.size(2) > 4:
-                            base_dbp = 80 + torch.randn(1, device=vitals.device) * 5
-                            vitals[i, pos, 4] = base_dbp * (1 + 0.05 * (torch.sin(torch.tensor(pos_idx * 0.5))))
-                        
-                        # 血氧饱和度 (SpO2) - 可能略微下降
-                        if vitals.size(2) > 5:
-                            base_spo2 = 98 + torch.randn(1, device=vitals.device)
-                            vitals[i, pos, 5] = base_spo2 * (1 - 0.02 * time_factor)
-                            # 确保血氧饱和度不超过100%且不低于90%
-                            vitals[i, pos, 5] = torch.clamp(vitals[i, pos, 5], 90, 100)
-                        
-                        # 为实验室值添加合理的默认值
-                        # 白细胞计数 (WBC) - 可能上升
-                        base_wbc = 7.5 + torch.randn(1, device=labs.device) * 1.5
-                        labs[i, pos, 0] = base_wbc * (1 + 0.2 * time_factor)
-                        
-                        # 肌酐 (Creatinine) - 可能上升
-                        if labs.size(2) > 1:
-                            base_creat = 0.9 + torch.randn(1, device=labs.device) * 0.2
-                            labs[i, pos, 1] = base_creat * (1 + 0.3 * time_factor)
-                            # 确保肌酐不小于0
-                            labs[i, pos, 1] = torch.max(torch.tensor(0.5, device=labs.device), labs[i, pos, 1])
-                        
-                        # 血尿素氮 (BUN) - 可能上升
-                        if labs.size(2) > 2:
-                            base_bun = 14 + torch.randn(1, device=labs.device) * 3
-                            labs[i, pos, 2] = base_bun * (1 + 0.25 * time_factor)
-                        
-                        # 乳酸 (Lactate) - 可能上升
-                        if labs.size(2) > 3:
-                            base_lact = 1.2 + torch.randn(1, device=labs.device) * 0.3
-                            labs[i, pos, 3] = base_lact * (1 + 0.4 * time_factor)
-                            # 确保乳酸不小于0
-                            labs[i, pos, 3] = torch.max(torch.tensor(0.5, device=labs.device), labs[i, pos, 3])
-                        
-                        # 血小板计数 (Platelet) - 可能下降
-                        if labs.size(2) > 4:
-                            base_plt = 250 + torch.randn(1, device=labs.device) * 40
-                            labs[i, pos, 4] = base_plt * (1 - 0.2 * time_factor)
-                        
-                        # 总胆红素 (Bilirubin) - 可能上升
-                        if labs.size(2) > 5:
-                            base_bili = 0.8 + torch.randn(1, device=labs.device) * 0.2
-                            labs[i, pos, 5] = base_bili * (1 + 0.3 * time_factor)
-                            # 确保胆红素不小于0
-                            labs[i, pos, 5] = torch.max(torch.tensor(0.2, device=labs.device), labs[i, pos, 5])
-                        
-                        # 药物使用 - 在后期时间点可能开始使用
-                        if drugs.size(2) >= 1:  # 抗生素
-                            # 时间越晚，使用抗生素的概率越高
-                            use_prob = 0.1 + 0.4 * time_factor
-                            drugs[i, pos, 0] = 1.0 if torch.rand(1, device=drugs.device) < use_prob else 0.0
-                        
-                        if drugs.size(2) >= 2:  # 升压药
-                            # 时间越晚，使用升压药的概率越高，但总体低于抗生素
-                            use_prob = 0.05 + 0.25 * time_factor
-                            drugs[i, pos, 1] = 1.0 if torch.rand(1, device=drugs.device) < use_prob else 0.0
-    
-    if fixed_samples > 0:
-        logger.info(f"在批次中共修复了 {fixed_samples}/{batch_size} 个全零样本")
+                logger.error(f"样本 {i} 在非填充位置的所有特征都接近零")
+                raise ValueError(f"批次数据质量不足：样本 {i} 特征全零")
 
 def load_data(data_dir, batch_size=32, max_samples=None):
     """
@@ -1271,3 +1114,58 @@ def load_data(data_dir, batch_size=32, max_samples=None):
     }
     
     return data_loaders, feature_dims 
+
+
+class SepsisDataLoader:
+    """
+    脓毒症数据加载器类，封装数据加载和预处理功能
+    """
+    
+    def __init__(self, data_path):
+        """
+        初始化数据加载器
+        
+        Args:
+            data_path: 数据目录路径
+        """
+        self.data_path = data_path
+        self.feature_dims = None
+        
+    def load_and_split_data(self, batch_size=32, max_samples=None):
+        """
+        加载并分割数据
+        
+        Args:
+            batch_size: 批次大小
+            max_samples: 最大样本数量
+            
+        Returns:
+            (train_loader, val_loader, test_loader): 数据加载器元组
+        """
+        try:
+            data_loaders, feature_dims = load_data(
+                data_dir=self.data_path,
+                batch_size=batch_size,
+                max_samples=max_samples
+            )
+            
+            self.feature_dims = feature_dims
+            
+            return (
+                data_loaders['train'],
+                data_loaders['val'], 
+                data_loaders['test']
+            )
+            
+        except Exception as e:
+            logger.error(f"数据加载失败: {e}")
+            return None, None, None
+    
+    def get_feature_dims(self):
+        """
+        获取特征维度信息
+        
+        Returns:
+            特征维度字典
+        """
+        return self.feature_dims

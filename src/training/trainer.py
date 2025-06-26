@@ -165,13 +165,8 @@ def train_model(model, data_loaders, kg_embeddings, device, learning_rate=0.001,
                 
                 # 确保特征非零，如果所有特征都是零，添加一些随机特征
                 if not valid_positions.any():
-                    logger.warning(f"批次 {batch_idx} 中所有特征都是零，添加随机特征")
-                    # 添加随机特征到生命体征的第一维
-                    batch_size, seq_len = vitals.shape[0], vitals.shape[1]
-                    vitals[:, 0, 0] = torch.randn(batch_size, device=device) * 5 + 70  # 模拟心率
-                    # 重新计算有效位置
-                    vitals_valid = vitals.sum(dim=2) != 0
-                    valid_positions = vitals_valid | labs_valid | drugs_valid
+                    logger.error(f"批次 {batch_idx} 中所有特征都是零，数据质量不足")
+                    raise ValueError("训练数据质量不足：所有特征都是零")
                 
                 # 反转为掩码（True表示填充位置）
                 attention_mask = ~valid_positions
@@ -182,12 +177,8 @@ def train_model(model, data_loaders, kg_embeddings, device, learning_rate=0.001,
                     fully_masked = attention_mask.all(dim=1)
                     num_fully_masked = fully_masked.sum().item()
                     if num_fully_masked > 0:
-                        logger.warning(f"批次 {batch_idx} 中有{num_fully_masked}个样本的所有位置都被掩码，设置第一个时间点为有效")
-                        # 对这些样本，将第一个位置设为非掩码
-                        attention_mask[fully_masked, 0] = False
-                        # 同时添加随机特征
-                        vitals[fully_masked, 0, 0] = torch.randn(num_fully_masked, device=device) * 5 + 70
-                        labs[fully_masked, 0, 0] = torch.randn(num_fully_masked, device=device) * 2 + 10
+                        logger.error(f"批次 {batch_idx} 中有{num_fully_masked}个样本的所有位置都被掩码")
+                        raise ValueError("训练数据质量不足：样本被完全掩码")
                 
                 # 为每个样本随机选择一个知识图谱嵌入
                 batch_size = vitals.size(0)
@@ -297,13 +288,8 @@ def train_model(model, data_loaders, kg_embeddings, device, learning_rate=0.001,
                     
                     # 确保特征非零，如果所有特征都是零，添加一些随机特征
                     if not valid_positions.any():
-                        logger.warning(f"验证批次 {batch_idx} 中所有特征都是零，添加随机特征")
-                        # 添加随机特征到生命体征的第一维
-                        batch_size, seq_len = vitals.shape[0], vitals.shape[1]
-                        vitals[:, 0, 0] = torch.randn(batch_size, device=device) * 5 + 70  # 模拟心率
-                        # 重新计算有效位置
-                        vitals_valid = vitals.sum(dim=2) != 0
-                        valid_positions = vitals_valid | labs_valid | drugs_valid
+                        logger.error(f"验证批次 {batch_idx} 中所有特征都是零，数据质量不足")
+                        raise ValueError("验证数据质量不足：所有特征都是零")
                     
                     # 反转为掩码（True表示填充位置）
                     attention_mask = ~valid_positions
@@ -314,12 +300,8 @@ def train_model(model, data_loaders, kg_embeddings, device, learning_rate=0.001,
                         fully_masked = attention_mask.all(dim=1)
                         num_fully_masked = fully_masked.sum().item()
                         if num_fully_masked > 0:
-                            logger.warning(f"验证批次 {batch_idx} 中有{num_fully_masked}个样本的所有位置都被掩码，设置第一个时间点为有效")
-                            # 对这些样本，将第一个位置设为非掩码
-                            attention_mask[fully_masked, 0] = False
-                            # 同时添加随机特征
-                            vitals[fully_masked, 0, 0] = torch.randn(num_fully_masked, device=device) * 5 + 70
-                            labs[fully_masked, 0, 0] = torch.randn(num_fully_masked, device=device) * 2 + 10
+                            logger.error(f"验证批次 {batch_idx} 中有{num_fully_masked}个样本的所有位置都被掩码")
+                            raise ValueError("验证数据质量不足：样本被完全掩码")
                     
                     # 为每个样本随机选择一个知识图谱嵌入
                     batch_size = vitals.size(0)
@@ -429,6 +411,72 @@ def train_model(model, data_loaders, kg_embeddings, device, learning_rate=0.001,
     logger.info(f"训练完成，总耗时: {total_time:.2f}秒")
     
     return history
+
+class SepsisTrainer:
+    """
+    脓毒症训练器类，封装模型训练功能
+    """
+    
+    def __init__(self, model, train_loader, val_loader, test_loader=None, device=None):
+        """
+        初始化训练器
+        
+        Args:
+            model: 要训练的模型
+            train_loader: 训练数据加载器
+            val_loader: 验证数据加载器
+            test_loader: 测试数据加载器（可选）
+            device: 训练设备
+        """
+        self.model = model
+        self.train_loader = train_loader
+        self.val_loader = val_loader
+        self.test_loader = test_loader
+        self.device = device if device else torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        
+        # 将模型移动到指定设备
+        self.model.to(self.device)
+        
+    def train(self, kg_embeddings=None, learning_rate=0.001, epochs=50, patience=10, output_dir='./output'):
+        """
+        训练模型
+        
+        Args:
+            kg_embeddings: 知识图谱嵌入
+            learning_rate: 学习率
+            epochs: 训练轮数
+            patience: 早停耐心值
+            output_dir: 输出目录
+            
+        Returns:
+            训练历史记录
+        """
+        data_loaders = {
+            'train': self.train_loader,
+            'val': self.val_loader
+        }
+        
+        if self.test_loader:
+            data_loaders['test'] = self.test_loader
+        
+        # 如果没有提供知识图谱嵌入，创建假的嵌入
+        if kg_embeddings is None:
+            kg_embeddings = {
+                'entity_embeddings': np.random.randn(100, 64).astype(np.float32)
+            }
+            logger.warning("未提供知识图谱嵌入，使用随机嵌入")
+        
+        return train_model(
+            model=self.model,
+            data_loaders=data_loaders,
+            kg_embeddings=kg_embeddings,
+            device=self.device,
+            learning_rate=learning_rate,
+            epochs=epochs,
+            patience=patience,
+            output_dir=output_dir
+        )
+
 
 def plot_history(history, output_dir):
     """
